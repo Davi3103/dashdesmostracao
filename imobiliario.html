@@ -711,5 +711,209 @@
 </div><!-- /app-shell -->
 
 <script src="js/app.js?v=20260819c"></script>
+<script src="js/mock-data.js"></script>
+<!-- DEMO (09/09/2026): sub-abas IPTU/ITBI/ISSCC/TCA estavam só o "andaime" visual (tudo em
+     "—"/"Carregando..."/"Ainda não calculado") — pedido do Davi pra virar demonstração sem
+     precisar montar SQL/backend real ainda. Preenche só o que aparece por padrão ao abrir
+     cada sub-aba (KPIs, evolução, insights, bairro); busca/drill-down/exportação PDF-Excel
+     continuam sem funcionar de verdade (mesmo espírito dos elementos "mortos" já deixados
+     como estão em index.html). Reaproveita o elenco/bairros fictícios de js/mock-data.js. -->
+<script>
+(function(){
+  "use strict";
+  var MD = window.MOCK_DATA;
+
+  function fmtMoney(v){ return (Number(v)||0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
+  function fmtInt(v){ return (Number(v)||0).toLocaleString("pt-BR"); }
+  function fmtPct(v){ return (Number(v)||0).toLocaleString("pt-BR", { minimumFractionDigits:1, maximumFractionDigits:1 }) + "%"; }
+  function fmtPctAssinado(v){ v=Number(v)||0; return (v>=0?"+":"") + fmtPct(v); }
+  function set(id, txt){ var el = document.getElementById(id); if(el) el.textContent = txt; }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+  var CORES = ["#4F9EFF","#00D9B5","#FFB94A","#FF5F5F","#8B5CF6","#2ECF71","#F472B6","#38BDF8"];
+  var BAIRROS = ["Centro","Jardim das Flores","Bela Vista","Alto da Serra","Vila Serra Clara","Parque das Águas","Recanto Verde","Jardim Primavera","Vila Operária","Distrito Industrial"];
+  var charts = {};
+
+  function renderBarraHorizontal(containerId, linhas, fmt){
+    var el = document.getElementById(containerId);
+    if(!el) return;
+    fmt = fmt || fmtInt;
+    var max = Math.max.apply(null, linhas.map(function(l){ return l.valor||0; })) || 1;
+    el.innerHTML = '<div style="display:flex; flex-direction:column; gap:10px;">' + linhas.map(function(l){
+      var pct = Math.max(2, (l.valor||0)/max*100);
+      return '<div><div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:3px;">' +
+        '<span>' + esc(l.label) + '</span><span class="mono">' + fmt(l.valor) + '</span></div>' +
+        '<div style="background:var(--line); border-radius:5px; height:9px; overflow:hidden;">' +
+        '<div style="width:' + pct + '%; height:100%; background:' + l.cor + '; border-radius:5px;"></div></div></div>';
+    }).join("") + '</div>';
+  }
+
+  function renderBairros(listaId, valores){
+    var el = document.getElementById(listaId);
+    if(!el) return;
+    var linhas = BAIRROS.map(function(b, i){ return { bairro: b, valor: valores[i], qtd: MD.randInt(180, 2400) }; })
+      .sort(function(a,b){ return b.valor - a.valor; });
+    el.innerHTML = linhas.map(function(l){
+      return '<div class="iptu-bairro-card"><b>' + esc(l.bairro) + '</b><br>' +
+        '<span class="mono">' + fmtMoney(l.valor) + '</span><br>' +
+        '<span style="font-size:11px; color:var(--ink-dim);">' + fmtInt(l.qtd) + ' imóveis</span></div>';
+    }).join("");
+  }
+
+  // Preenche KPIs + evolução + insights + bairro de um tributo (IPTU/ITBI/ISSCC/TCA) — os 4
+  // seguem a mesma estrutura de cartões (Lançado/Arrecadado/[Cota Única]/Aberto/
+  // Inadimplência/[Isento/Suspenso]).
+  function renderTributo(cfg){
+    var p = cfg.prefix;
+    var evol = MD.gerarEvolucaoAnos(cfg.baseLancado, { crescimentoAnual: cfg.crescimento || 0.07 });
+    var atual = evol[evol.length - 1];
+    var anterior = evol[evol.length - 2];
+
+    set(p + "UpdatedAt", "09/09/2026 20:00:00");
+
+    var selAno = document.getElementById(p + "AnoFiltro");
+    if(selAno){
+      selAno.innerHTML = "";
+      MD.ANOS.slice().reverse().forEach(function(ano){
+        var opt = document.createElement("option");
+        opt.value = ano; opt.textContent = "Exercício " + ano;
+        if(ano === atual.ano) opt.selected = true;
+        selAno.appendChild(opt);
+      });
+    }
+
+    set(p + "Lancado", fmtMoney(atual.lancado));
+    set(p + "LancadoDelta", fmtPctAssinado((atual.lancado - anterior.lancado) / anterior.lancado * 100) + " vs " + anterior.ano);
+    set(p + "LancadoFoot", "exercício " + atual.ano);
+    set(p + "Arrecadado", fmtMoney(atual.arrecadado));
+    set(p + "ArrecadadoDelta", fmtPctAssinado((atual.arrecadado - anterior.arrecadado) / anterior.arrecadado * 100) + " vs " + anterior.ano);
+    set(p + "ArrecadadoFoot", fmtPct(atual.arrecadado/atual.lancado*100) + " do lançado");
+    set(p + "Aberto", fmtMoney(atual.aberto));
+    set(p + "AbertoDelta", fmtPct(atual.aberto/atual.lancado*100) + " do lançado");
+    set(p + "AbertoFoot", "a vencer no exercício " + atual.ano);
+    set(p + "Inadimplencia", fmtMoney(atual.inadimplencia));
+    set(p + "InadimplenciaDelta", fmtPct(atual.inadimplencia/atual.lancado*100) + " do lançado");
+    set(p + "InadimplenciaFoot", fmtPct(atual.inadimplencia/atual.lancado*100) + " do lançado");
+
+    if(cfg.hasCotaUnica){
+      var cotaUnica = atual.arrecadado * 0.58;
+      set(p + "CotaUnica", fmtMoney(cotaUnica));
+      set(p + "CotaUnicaFoot", fmtPct(cotaUnica/atual.arrecadado*100) + " do arrecadado");
+    }
+    if(cfg.hasIsentoSuspenso){
+      var isentoQtd = MD.randInt(80, 420);
+      var suspensoValor = atual.lancado * 0.02;
+      set(p + "Isento", fmtInt(isentoQtd) + " imóve" + (isentoQtd === 1 ? "l" : "is"));
+      set(p + "IsentoFoot", "isenções ativas no exercício " + atual.ano);
+      set(p + "Suspenso", fmtMoney(suspensoValor));
+      set(p + "SuspensoFoot", fmtPct(suspensoValor/atual.lancado*100) + " do lançado, em discussão administrativa/judicial");
+    }
+
+    var canvas = document.getElementById(p + "EvolucaoChart");
+    if(canvas){
+      if(charts[p+"Evol"]) charts[p+"Evol"].destroy();
+      charts[p+"Evol"] = new Chart(canvas.getContext("2d"), {
+        type: "bar",
+        data: { labels: evol.map(function(r){ return String(r.ano); }), datasets: [
+          { label: "Lançado", data: evol.map(function(r){ return r.lancado; }), backgroundColor: "#4F9EFF" },
+          { label: "Arrecadado", data: evol.map(function(r){ return r.arrecadado; }), backgroundColor: "#00D9B5" }
+        ]},
+        options: { responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ position:"top" } },
+          scales:{ y:{ ticks:{ callback:function(v){ return (v/1e6).toFixed(1)+"mi"; } } }, x:{ grid:{ display:false } } } }
+      });
+    }
+    set(p + "EvolucaoNote", "Série histórica " + evol[0].ano + "–" + atual.ano + ". Dados de demonstração (protótipo).");
+
+    var insightsEl = document.getElementById(p + "InsightsList");
+    if(insightsEl){
+      var variacao = (atual.arrecadado - anterior.arrecadado) / anterior.arrecadado * 100;
+      insightsEl.innerHTML = [
+        "Em " + atual.ano + ", lançou " + fmtMoney(atual.lancado) + " e arrecadou " + fmtMoney(atual.arrecadado) + " (" + fmtPct(atual.arrecadado/atual.lancado*100) + " do lançado).",
+        "Arrecadação " + (variacao >= 0 ? "cresceu" : "caiu") + " " + fmtPctAssinado(variacao) + " em relação a " + anterior.ano + ".",
+        "Inadimplência de " + fmtMoney(atual.inadimplencia) + " no exercício — " + fmtPct(atual.inadimplencia/atual.lancado*100) + " do lançado."
+      ].map(function(t){ return "<li>" + t + "</li>"; }).join("");
+    }
+
+    renderBairros(p + "BairroLista", BAIRROS.map(function(_, i){ return Math.round(atual.lancado * (0.18 - i*0.014)); }));
+
+    return { evol: evol, atual: atual };
+  }
+
+  var iptu = renderTributo({ prefix: "iptu", baseLancado: 42000000, crescimento: 0.065, hasCotaUnica: true, hasIsentoSuspenso: true });
+  renderTributo({ prefix: "itbi", baseLancado: 6800000, crescimento: 0.08, hasCotaUnica: false, hasIsentoSuspenso: false });
+  var isscc = renderTributo({ prefix: "isscc", baseLancado: 3200000, crescimento: 0.075, hasCotaUnica: false, hasIsentoSuspenso: true });
+  renderTributo({ prefix: "tca", baseLancado: 2100000, crescimento: 0.06, hasCotaUnica: false, hasIsentoSuspenso: true });
+
+  // ---- extras exclusivos do IPTU ----
+  set("resumoTotalImoveis", fmtInt(58400));
+  set("resumoComIptu", fmtInt(54200));
+  set("resumoComTca", fmtInt(41800));
+  set("resumoComItbi", fmtInt(3120));
+  set("resumoIptuSemTca", fmtInt(12400));
+  set("iptuResumoImoveisFoot", "Cadastro imobiliário completo, exercício " + iptu.atual.ano + ".");
+
+  var diasLabels = [];
+  var diasValores = [];
+  var totalDiario = 0;
+  for(var d = 1; d <= 28; d++){
+    diasLabels.push(String(d).padStart(2,"0") + "/02");
+    var v = MD.randInt(20000, 180000);
+    diasValores.push(v);
+    totalDiario += v;
+  }
+  var canvasDiaria = document.getElementById("iptuDiariaChart");
+  if(canvasDiaria){
+    new Chart(canvasDiaria.getContext("2d"), {
+      type: "line",
+      data: { labels: diasLabels, datasets: [{ data: diasValores, borderColor:"#00D9B5", backgroundColor:"rgba(0,217,181,0.15)", fill:true, tension:0.3, pointRadius:2 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales:{ y:{ ticks:{ callback:function(v){ return (v/1000).toFixed(0)+"mil"; } } }, x:{ grid:{ display:false } } } }
+    });
+  }
+  set("iptuDiariaTotal", fmtMoney(totalDiario));
+  var diaDe = document.getElementById("iptuDiariaDe"); if(diaDe) diaDe.value = "2026-02-01";
+  var diaAte = document.getElementById("iptuDiariaAte"); if(diaAte) diaAte.value = "2026-02-28";
+
+  renderBarraHorizontal("chartIptuSituacaoGuia", [
+    { label: "Paga", valor: 38200, cor: "#2ECF71" },
+    { label: "A vencer", valor: 9400, cor: "#4F9EFF" },
+    { label: "Vencida", valor: 6600, cor: "#FF5F5F" }
+  ]);
+  renderBarraHorizontal("chartIptuStatusPagamento", [
+    { label: "Cota Única", valor: 21800, cor: "#FFB94A" },
+    { label: "Parcelado (carnê)", valor: 18900, cor: "#4F9EFF" },
+    { label: "Débito automático", valor: 7300, cor: "#8B5CF6" }
+  ]);
+
+  // ---- extras exclusivos do ISSCC ----
+  var canvasAlt = document.getElementById("issccAlteracoesAreaChart");
+  if(canvasAlt){
+    new Chart(canvasAlt.getContext("2d"), {
+      type: "bar",
+      data: { labels: MD.ANOS.map(String), datasets: [{ label: "Alterações de área", data: MD.ANOS.map(function(){ return MD.randInt(120, 640); }), backgroundColor: "#8B5CF6" }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ display:false } } } }
+    });
+  }
+  set("issccAlteracoesAreaNote", "Imóveis distintos com alteração de área edificada registrada em dbo.LogAlteracoes, por ano — dado de demonstração.");
+  set("issccVinculosTotal", fmtInt(4180));
+  set("issccVinculosEmpresa", fmtInt(2640));
+  set("issccVinculosEmpresaFoot", fmtPct(2640/4180*100) + " dos imóveis com ISSCC");
+  set("issccVinculosPJ", fmtInt(1890));
+  set("issccVinculosNote", "Imóveis com lançamento de ISSCC no exercício " + isscc.atual.ano + " que também têm vínculo mobiliário (empresa no endereço) ou proprietário Pessoa Jurídica.");
+
+  // ---- extras exclusivos da TCA ----
+  renderBarraHorizontal("chartTcaSituacaoGuia", [
+    { label: "Paga", valor: 34600, cor: "#2ECF71" },
+    { label: "A vencer", valor: 7100, cor: "#4F9EFF" },
+    { label: "Vencida", valor: 4200, cor: "#FF5F5F" }
+  ]);
+  renderBarraHorizontal("chartTcaStatusPagamento", [
+    { label: "Cota Única", valor: 19200, cor: "#FFB94A" },
+    { label: "Parcelado (carnê)", valor: 15400, cor: "#4F9EFF" },
+    { label: "Débito automático", valor: 5100, cor: "#8B5CF6" }
+  ]);
+})();
+</script>
 </body>
 </html>

@@ -853,5 +853,337 @@
 </div><!-- /app-shell -->
 
 <script src="js/app.js?v=20260819c"></script>
+<script src="js/mock-data.js"></script>
+<!-- DEMO (09/09/2026): sub-abas MOBILIÁRIO/TFE/TFHS/ISS estavam só o "andaime" visual (tudo em
+     "—"/"Carregando..."/"Ainda não calculado") — pedido do Davi pra virar demonstração sem
+     precisar montar SQL/backend real ainda. Preenche só o que aparece por padrão ao abrir
+     cada sub-aba (KPIs, evolução, insights, tabela de exercícios, segmento); busca/drill-down
+     de segmento/empresa/MEI e exportação PDF/Excel continuam sem funcionar de verdade (mesmo
+     espírito dos elementos "mortos" já deixados como estão em index.html). Reaproveita o
+     elenco fictício de js/mock-data.js. -->
+<script>
+(function(){
+  "use strict";
+  var MD = window.MOCK_DATA;
+
+  function fmtMoney(v){ return (Number(v)||0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
+  function fmtInt(v){ return (Number(v)||0).toLocaleString("pt-BR"); }
+  function fmtPct(v){ return (Number(v)||0).toLocaleString("pt-BR", { minimumFractionDigits:1, maximumFractionDigits:1 }) + "%"; }
+  function fmtPctAssinado(v){ v=Number(v)||0; return (v>=0?"+":"") + fmtPct(v); }
+  function set(id, txt){ var el = document.getElementById(id); if(el) el.textContent = txt; }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+  var charts = {};
+  function destruir(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+  function renderBarraHorizontal(containerId, linhas, fmt){
+    var el = document.getElementById(containerId);
+    if(!el) return;
+    fmt = fmt || fmtInt;
+    var max = Math.max.apply(null, linhas.map(function(l){ return l.valor||0; })) || 1;
+    el.innerHTML = '<div style="display:flex; flex-direction:column; gap:10px;">' + linhas.map(function(l){
+      var pct = Math.max(2, (l.valor||0)/max*100);
+      return '<div><div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:3px;">' +
+        '<span>' + esc(l.label) + '</span><span class="mono">' + fmt(l.valor) + '</span></div>' +
+        '<div style="background:var(--line); border-radius:5px; height:9px; overflow:hidden;">' +
+        '<div style="width:' + pct + '%; height:100%; background:' + l.cor + '; border-radius:5px;"></div></div></div>';
+    }).join("") + '</div>';
+  }
+
+  var SEGMENTOS = ["Comércio Varejista","Prestação de Serviços","Indústria","Comércio Atacadista","Serviços de Saúde","Construção Civil","Alimentação","Tecnologia da Informação"];
+  var CORES = ["#4F9EFF","#00D9B5","#FFB94A","#FF5F5F","#8B5CF6","#2ECF71","#F472B6","#38BDF8"];
+
+  // ==== Sub-aba MOBILIÁRIO (cadastro) ====
+  (function(){
+    var totalEmpresas = 37200 + MD.randInt(-200, 200);
+    var ativas = Math.round(totalEmpresas * 0.71);
+    var inativas = totalEmpresas - ativas;
+    var aberturas = MD.randInt(1400, 2100);
+    var encerramentos = MD.randInt(900, 1500);
+    var issArrecadado = 41200000 + MD.randInt(-800000, 800000);
+
+    set("mobCadUpdatedAt", "09/09/2026 20:00:00");
+    var selAno = document.getElementById("mobCadAnoFiltro");
+    if(selAno){
+      selAno.innerHTML = "";
+      MD.ANOS.slice().reverse().forEach(function(ano){
+        var opt = document.createElement("option");
+        opt.value = ano; opt.textContent = "Exercício " + ano;
+        if(ano === 2026) opt.selected = true;
+        selAno.appendChild(opt);
+      });
+    }
+
+    set("mobCadTotal", fmtInt(totalEmpresas));
+    set("mobCadTotalFoot", "histórico completo do cadastro");
+    set("mobCadAtivas", fmtInt(ativas));
+    set("mobCadAtivasFoot", fmtPct(ativas/totalEmpresas*100) + " da base");
+    set("mobCadAberturas", fmtInt(aberturas));
+    set("mobCadAberturasFoot", "no exercício 2026");
+    set("mobCadEncerramentos", fmtInt(encerramentos));
+    set("mobCadEncerramentosFoot", "no exercício 2026");
+    set("mobCadIssArrecadado", fmtMoney(issArrecadado));
+    set("mobCadIssArrecadadoFoot", "exercício 2026");
+
+    var evolIss = MD.gerarEvolucaoAnos(issArrecadado * 0.82, { crescimentoAnual: 0.07 });
+    var canvasIssAno = document.getElementById("mobCadIssPorAnoChart");
+    if(canvasIssAno){
+      new Chart(canvasIssAno.getContext("2d"), {
+        type: "bar",
+        data: { labels: evolIss.map(function(r){ return String(r.ano); }), datasets: [{ label:"ISS Arrecadado", data: evolIss.map(function(r){ return r.arrecadado; }), backgroundColor:"#00D9B5" }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ ticks:{ callback:function(v){ return (v/1e6).toFixed(1)+"mi"; } } }, x:{ grid:{ display:false } } } }
+      });
+    }
+    set("mobCadIssPorAnoNote", "Série histórica 2021–2026. Dados de demonstração (protótipo).");
+
+    var insightsEl = document.getElementById("mobCadInsightsList");
+    if(insightsEl){
+      insightsEl.innerHTML = [
+        fmtInt(totalEmpresas) + " empresas no cadastro mobiliário, " + fmtPct(ativas/totalEmpresas*100) + " ativas.",
+        "Saldo empresarial de " + fmtInt(aberturas - encerramentos) + " no exercício 2026 (" + fmtInt(aberturas) + " aberturas − " + fmtInt(encerramentos) + " encerramentos).",
+        "Prestação de Serviços segue como o maior segmento em número de empresas cadastradas."
+      ].map(function(t){ return "<li>" + t + "</li>"; }).join("");
+    }
+
+    var gaugeCanvas = document.getElementById("mobCadSaudeGauge");
+    if(gaugeCanvas){
+      var pctAtivas = ativas/totalEmpresas*100;
+      new Chart(gaugeCanvas.getContext("2d"), {
+        type: "doughnut",
+        data: { datasets: [{ data: [pctAtivas, 100-pctAtivas], backgroundColor: ["#2ECF71","rgba(255,255,255,0.08)"], borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, rotation:-90, circumference:180, cutout:"75%", plugins:{ legend:{ display:false }, tooltip:{ enabled:false } } }
+      });
+    }
+    set("mobCadSaudePct", fmtPct(ativas/totalEmpresas*100));
+    set("mobCadSaudeAtivas", fmtInt(ativas));
+    set("mobCadSaudeInativas", fmtInt(inativas));
+
+    var saldoPorAno = MD.ANOS.map(function(ano){
+      var ab = MD.randInt(1100, 2200); var en = MD.randInt(700, 1600);
+      return { ano: ano, saldo: ab - en };
+    });
+    var canvasSaldo = document.getElementById("mobCadSaldoChart");
+    if(canvasSaldo){
+      new Chart(canvasSaldo.getContext("2d"), {
+        type: "bar",
+        data: { labels: saldoPorAno.map(function(r){ return String(r.ano); }), datasets: [{ label:"Saldo", data: saldoPorAno.map(function(r){ return r.saldo; }), backgroundColor: saldoPorAno.map(function(r){ return r.saldo>=0 ? "#2ECF71" : "#FF5F5F"; }) }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ display:false } } } }
+      });
+    }
+    set("mobCadSaldoNote", "Aberturas menos encerramentos, por exercício. Dados de demonstração (protótipo).");
+
+    var segLista = document.getElementById("mobCadSegmentoLista");
+    if(segLista){
+      var qtdsSeg = SEGMENTOS.map(function(){ return MD.randInt(1200, 9800); });
+      renderBarraHorizontal("mobCadSegmentoLista", SEGMENTOS.map(function(s, i){ return { label: s, valor: qtdsSeg[i], cor: CORES[i % CORES.length] }; }));
+    }
+
+    var encerradasPeriodo = MD.randInt(4200, 7800);
+    var encerradasExercicio = encerramentos;
+    var encerradasAnoAnterior = Math.round(encerradasExercicio * (0.85 + MD.rand()*0.3));
+    set("mobCadEncerradasPeriodo", fmtInt(encerradasPeriodo));
+    set("mobCadEncerradasExercicio", fmtInt(encerradasExercicio));
+    set("mobCadEncerradasVariacao", fmtPctAssinado((encerradasExercicio - encerradasAnoAnterior)/encerradasAnoAnterior*100));
+    var canvasEnc = document.getElementById("mobCadEncerradasChart");
+    if(canvasEnc){
+      var encPorAno = MD.ANOS.map(function(ano){ return MD.randInt(700, 1600); });
+      new Chart(canvasEnc.getContext("2d"), {
+        type: "bar",
+        data: { labels: MD.ANOS.map(String), datasets: [{ label:"Encerradas", data: encPorAno, backgroundColor:"#FF5F5F" }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ display:false } } } }
+      });
+    }
+    set("mobCadEncerradasNote", "Empresas com data de encerramento registrada no cadastro, por ano. Dados de demonstração (protótipo).");
+
+    var meiTotal = MD.randInt(6200, 9800);
+    set("mobCadMeiTotal", fmtInt(meiTotal));
+    var meiPorAnoEl = document.getElementById("mobCadMeiPorAno");
+    if(meiPorAnoEl){
+      var linhasMei = MD.ANOS.map(function(ano){ return { ano: ano, enquadrados: MD.randInt(5000, meiTotal), comTfe: MD.randInt(3000, meiTotal) }; });
+      meiPorAnoEl.innerHTML = '<div class="table-panel"><table><thead><tr><th>Exercício</th><th>MEIs Enquadrados</th><th>MEIs com TFE Lançado</th></tr></thead><tbody>' +
+        linhasMei.map(function(l){ return "<tr><td>" + l.ano + "</td><td class=\"mono\">" + fmtInt(l.enquadrados) + "</td><td class=\"mono\">" + fmtInt(l.comTfe) + "</td></tr>"; }).join("") +
+        '</tbody></table></div>';
+    }
+  })();
+
+  // Preenche uma taxa mobiliária (TFE/TFHS/ISS) — mesma estrutura de cartões nas 3.
+  function renderTaxa(cfg){
+    var p = cfg.prefix;
+    var evol = MD.gerarEvolucaoAnos(cfg.baseLancado, { crescimentoAnual: cfg.crescimento || 0.07 });
+    var atual = evol[evol.length - 1];
+    var anterior = evol[evol.length - 2];
+
+    set(p + "UpdatedAt", "09/09/2026 20:00:00");
+    var selAno = document.getElementById(p + "AnoFiltro");
+    if(selAno){
+      selAno.innerHTML = "";
+      MD.ANOS.slice().reverse().forEach(function(ano){
+        var opt = document.createElement("option");
+        opt.value = ano; opt.textContent = "Exercício " + ano;
+        if(ano === atual.ano) opt.selected = true;
+        selAno.appendChild(opt);
+      });
+    }
+
+    set(p + "Lancado", fmtMoney(atual.lancado));
+    set(p + "LancadoFoot", "exercício " + atual.ano);
+    set(p + "Arrecadado", fmtMoney(atual.arrecadado));
+    set(p + "ArrecadadoFoot", fmtPct(atual.arrecadado/atual.lancado*100) + " do lançado");
+    set(p + "Aberto", fmtMoney(atual.aberto));
+    set(p + "AbertoFoot", "a vencer + vencido no exercício " + atual.ano);
+    set(p + "Inadimplencia", fmtMoney(atual.inadimplencia));
+    set(p + "InadimplenciaFoot", fmtPct(atual.inadimplencia/atual.lancado*100) + " do lançado");
+
+    var arrecPeriodo = evol.reduce(function(s,r){ return s + r.arrecadado; }, 0);
+    set(p + "ArrecPeriodo", fmtMoney(arrecPeriodo));
+    set(p + "ArrecPeriodoFoot", "acumulado " + evol[0].ano + "–" + atual.ano);
+    var arrecAnteriores = Math.round(atual.arrecadado * 0.06);
+    set(p + "ArrecAnteriores", fmtMoney(arrecAnteriores));
+    set(p + "ArrecAnterioresFoot", "recebido em " + atual.ano + " referente a exercícios anteriores");
+
+    var canvasEvol = document.getElementById(p + "EvolucaoChart");
+    if(canvasEvol){
+      destruir(p+"Evol");
+      charts[p+"Evol"] = new Chart(canvasEvol.getContext("2d"), {
+        type: "bar",
+        data: { labels: evol.map(function(r){ return String(r.ano); }), datasets: [
+          { label:"Lançado", data: evol.map(function(r){ return r.lancado; }), backgroundColor:"#4F9EFF" },
+          { label:"Arrecadado", data: evol.map(function(r){ return r.arrecadado; }), backgroundColor:"#00D9B5" }
+        ]},
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"top" } }, scales:{ y:{ ticks:{ callback:function(v){ return (v/1e6).toFixed(1)+"mi"; } } }, x:{ grid:{ display:false } } } }
+      });
+    }
+    set(p + "EvolucaoNote", "Série histórica " + evol[0].ano + "–" + atual.ano + ". Dados de demonstração (protótipo).");
+
+    var insightsEl = document.getElementById(p + "InsightsList");
+    if(insightsEl){
+      var variacao = (atual.arrecadado - anterior.arrecadado) / anterior.arrecadado * 100;
+      insightsEl.innerHTML = [
+        "Em " + atual.ano + ", lançou " + fmtMoney(atual.lancado) + " e arrecadou " + fmtMoney(atual.arrecadado) + " (" + fmtPct(atual.arrecadado/atual.lancado*100) + " do lançado).",
+        "Arrecadação " + (variacao >= 0 ? "cresceu" : "caiu") + " " + fmtPctAssinado(variacao) + " em relação a " + anterior.ano + ".",
+        "Acumulado de " + fmtMoney(arrecPeriodo) + " arrecadado desde " + evol[0].ano + "."
+      ].map(function(t){ return "<li>" + t + "</li>"; }).join("");
+    }
+
+    var eficPct = atual.arrecadado/atual.lancado*100;
+    var gaugeCanvas = document.getElementById(p + "EficienciaGauge");
+    if(gaugeCanvas){
+      destruir(p+"Gauge");
+      var pctClamp = Math.max(0, Math.min(100, eficPct));
+      charts[p+"Gauge"] = new Chart(gaugeCanvas.getContext("2d"), {
+        type: "doughnut",
+        data: { datasets: [{ data: [pctClamp, 100-pctClamp], backgroundColor: ["#FFB94A","rgba(255,255,255,0.08)"], borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, rotation:-90, circumference:180, cutout:"75%", plugins:{ legend:{ display:false }, tooltip:{ enabled:false } } }
+      });
+    }
+    set(p + "EficienciaPct", fmtPct(eficPct));
+    set(p + "EficienciaArrecadado", fmtMoney(atual.arrecadado));
+    set(p + "EficienciaInadimplencia", fmtMoney(atual.inadimplencia));
+
+    var canvasInad = document.getElementById(p + "InadimplenciaChart");
+    if(canvasInad){
+      destruir(p+"Inad");
+      charts[p+"Inad"] = new Chart(canvasInad.getContext("2d"), {
+        type: "line",
+        data: { labels: evol.map(function(r){ return String(r.ano); }), datasets: [{ data: evol.map(function(r){ return r.inadimplencia; }), borderColor:"#FF5F5F", backgroundColor:"rgba(255,95,95,0.15)", fill:true, tension:0.3, pointRadius:3 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ ticks:{ callback:function(v){ return (v/1e6).toFixed(1)+"mi"; } } }, x:{ grid:{ display:false } } } }
+      });
+    }
+
+    var suspenso = Math.max(0, atual.lancado - atual.arrecadado - atual.inadimplencia);
+    var canvasComp = document.getElementById(p + "ComposicaoDonut");
+    if(canvasComp){
+      destruir(p+"Comp");
+      charts[p+"Comp"] = new Chart(canvasComp.getContext("2d"), {
+        type: "doughnut",
+        data: { labels:["Arrecadado","Inadimplência","Suspenso/Outros"], datasets:[{ data:[atual.arrecadado, atual.inadimplencia, suspenso], backgroundColor:["#00D9B5","#FF5F5F","#8892A4"], borderWidth:0 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }
+      });
+    }
+    var legEl = document.getElementById(p + "ComposicaoLegenda");
+    if(legEl){
+      function linha(cor, label, valor){
+        return '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+          '<span><span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:' + cor + '; margin-right:6px;"></span>' + label + '</span>' +
+          '<span class="mono">' + fmtMoney(valor) + '</span></div>';
+      }
+      legEl.innerHTML = linha("#00D9B5","Arrecadado",atual.arrecadado) + linha("#FF5F5F","Inadimplência",atual.inadimplencia) + linha("#8892A4","Suspenso/Outros",suspenso);
+    }
+
+    var tabelaEl = document.getElementById(p + "ExerciciosTabela");
+    if(tabelaEl){
+      tabelaEl.innerHTML = '<table><thead><tr><th>Exercício</th><th>Lançado</th><th>Arrecadado</th><th>Inadimplência</th><th>% Arrecadado</th></tr></thead><tbody>' +
+        evol.slice().reverse().map(function(r){
+          return "<tr><td>" + r.ano + "</td><td class=\"mono\">" + fmtMoney(r.lancado) + "</td><td class=\"mono\">" + fmtMoney(r.arrecadado) + "</td><td class=\"mono\">" + fmtMoney(r.inadimplencia) + "</td><td>" + fmtPct(r.arrecadado/r.lancado*100) + "</td></tr>";
+        }).join("") + '</tbody></table>';
+    }
+
+    var segLista = document.getElementById(p + "SegmentoLista");
+    if(segLista){
+      var pesos = [0.24,0.19,0.16,0.13,0.11,0.09,0.05,0.03];
+      renderBarraHorizontal(p + "SegmentoLista", SEGMENTOS.map(function(s, i){ return { label: s, valor: Math.round(atual.lancado * (pesos[i]||0.02)), cor: CORES[i % CORES.length] }; }), fmtMoney);
+    }
+
+    if(cfg.hasMei){
+      var meiTotal = MD.randInt(1800, 3400);
+      set(p + "MeiTotal", fmtInt(meiTotal));
+      var meiPorAnoEl = document.getElementById(p + "MeiPorAno");
+      if(meiPorAnoEl){
+        var linhasMei = MD.ANOS.map(function(ano){ return { ano: ano, enquadrados: MD.randInt(1200, meiTotal), comTfe: MD.randInt(800, meiTotal) }; });
+        meiPorAnoEl.innerHTML = '<div class="table-panel"><table><thead><tr><th>Exercício</th><th>MEIs Enquadrados</th><th>MEIs com Guia Lançada</th></tr></thead><tbody>' +
+          linhasMei.map(function(l){ return "<tr><td>" + l.ano + "</td><td class=\"mono\">" + fmtInt(l.enquadrados) + "</td><td class=\"mono\">" + fmtInt(l.comTfe) + "</td></tr>"; }).join("") +
+          '</tbody></table></div>';
+      }
+    }
+
+    return { evol: evol, atual: atual };
+  }
+
+  renderTaxa({ prefix: "mobTfe", baseLancado: 5200000, crescimento: 0.07, hasMei: true });
+  renderTaxa({ prefix: "mobTfhs", baseLancado: 2600000, crescimento: 0.06, hasMei: true });
+  var iss = renderTaxa({ prefix: "mobIss", baseLancado: 41200000, crescimento: 0.075, hasMei: false });
+
+  // ---- extras exclusivos da ISS ----
+  var municipios = ["São Paulo","Campinas","Ribeirão Preto","Sorocaba","Piracicaba"];
+  renderBarraHorizontal("mobIssMunicipioLista", municipios.map(function(m, i){ return { label: m, valor: MD.randInt(40000, 480000), cor: CORES[i % CORES.length] }; }), fmtMoney);
+
+  var emitidas = MD.randInt(28000, 42000);
+  var tomadas = MD.randInt(3000, 7000);
+  set("mobIssNfseEmitidas", fmtInt(emitidas));
+  set("mobIssNfseTomadas", fmtInt(tomadas));
+  set("mobIssNfsePctTomadas", fmtPct(tomadas/(emitidas+tomadas)*100));
+  var canvasNfse = document.getElementById("mobIssNfseChart");
+  if(canvasNfse){
+    new Chart(canvasNfse.getContext("2d"), {
+      type: "bar",
+      data: { labels: MD.ANOS.map(String), datasets: [
+        { label:"Emitidas", data: MD.ANOS.map(function(){ return MD.randInt(24000, 42000); }), backgroundColor:"#2E4FA3" },
+        { label:"Tomadas", data: MD.ANOS.map(function(){ return MD.randInt(2500, 7000); }), backgroundColor:"#FFB94A" }
+      ]},
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"bottom" } }, scales:{ x:{ grid:{ display:false } } } }
+    });
+  }
+  set("mobIssNfseNote", "Quantidade de notas fiscais de serviço eletrônicas, por exercício. Dados de demonstração (protótipo).");
+
+  var simEl = document.getElementById("mobIssSimulacao");
+  if(simEl){
+    var base2026 = iss.atual.lancado;
+    var proj2027 = Math.round(base2026 * 1.06);
+    simEl.innerHTML = '<div class="iptu-kpi-row" style="grid-template-columns:repeat(3,1fr);">' +
+      '<div class="iptu-kpi-card"><p class="iptu-kpi-label">Lançado 2026 (base)</p><p class="iptu-kpi-value mono">' + fmtMoney(base2026) + '</p></div>' +
+      '<div class="iptu-kpi-card iptu-c-lancado"><p class="iptu-kpi-label">Projeção 2027 (moderado)</p><p class="iptu-kpi-value mono">' + fmtMoney(proj2027) + '</p></div>' +
+      '<div class="iptu-kpi-card"><p class="iptu-kpi-label">Crescimento projetado</p><p class="iptu-kpi-value mono">' + fmtPctAssinado((proj2027-base2026)/base2026*100) + '</p></div>' +
+      '</div><p class="panel-sub" style="margin-top:10px;">Regressão linear sobre o histórico 2021–2026. Cenário conservador: ' + fmtMoney(Math.round(base2026 + (proj2027-base2026)*0.5)) + ' · agressivo: ' + fmtMoney(Math.round(base2026 + (proj2027-base2026)*1.5)) + '.</p>';
+  }
+
+  var limiteEl = document.getElementById("mobIssLimiteFaturamento");
+  if(limiteEl){
+    limiteEl.innerHTML = '<div class="iptu-kpi-row" style="grid-template-columns:repeat(2,1fr);">' +
+      '<div class="iptu-kpi-card iptu-c-suspenso"><p class="iptu-kpi-label">Empresas MEI próximas do teto (R$81.000/ano)</p><p class="iptu-kpi-value mono">' + fmtInt(MD.randInt(80,240)) + '</p></div>' +
+      '<div class="iptu-kpi-card iptu-c-suspenso"><p class="iptu-kpi-label">Empresas Simples Nacional próximas do teto (R$4,8mi/ano)</p><p class="iptu-kpi-value mono">' + fmtInt(MD.randInt(15,60)) + '</p></div>' +
+      '</div><p class="panel-sub" style="margin-top:10px;">Estimativa a partir do faturamento projetado no cenário provável de crescimento. Dados de demonstração (protótipo).</p>';
+  }
+})();
+</script>
 </body>
 </html>

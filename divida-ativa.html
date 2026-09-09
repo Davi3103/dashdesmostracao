@@ -359,5 +359,177 @@
 </div><!-- /app-shell -->
 
 <script src="js/app.js?v=20260820b"></script>
+<script src="js/mock-data.js"></script>
+<!-- DEMO (09/09/2026): página estava só o "andaime" visual (todo mundo em "—"/"Carregando...")
+     — pedido do Davi pra virar demonstração, sem precisar montar SQL/backend real ainda. Este
+     script SÓ preenche número/gráfico estático (reaproveitando o elenco fictício de
+     js/mock-data.js pra manter nome/CPF/CNPJ coerente com as outras páginas) — busca de
+     devedor, filtro de Exercício e exportação PDF/Excel continuam sem funcionar de verdade
+     (mesmo espírito dos elementos "mortos" já deixados como estão em index.html). -->
+<script>
+(function(){
+  "use strict";
+  var MD = window.MOCK_DATA;
+
+  function fmtMoney(v){ return (Number(v)||0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" }); }
+  function fmtInt(v){ return (Number(v)||0).toLocaleString("pt-BR"); }
+  function fmtPct(v){ return (Number(v)||0).toLocaleString("pt-BR", { minimumFractionDigits:1, maximumFractionDigits:1 }) + "%"; }
+  function set(id, txt){ var el = document.getElementById(id); if(el) el.textContent = txt; }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+  function renderBarraHorizontal(containerId, linhas, fmt){
+    var el = document.getElementById(containerId);
+    if(!el) return;
+    fmt = fmt || fmtMoney;
+    var max = Math.max.apply(null, linhas.map(function(l){ return l.valor||0; })) || 1;
+    el.innerHTML = '<div style="display:flex; flex-direction:column; gap:10px;">' + linhas.map(function(l){
+      var pct = Math.max(2, (l.valor||0)/max*100);
+      return '<div><div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:3px;">' +
+        '<span>' + esc(l.label) + '</span><span class="mono">' + fmt(l.valor) + '</span></div>' +
+        '<div style="background:var(--line); border-radius:5px; height:9px; overflow:hidden;">' +
+        '<div style="width:' + pct + '%; height:100%; background:' + l.cor + '; border-radius:5px;"></div></div></div>';
+    }).join("") + '</div>';
+  }
+
+  var CORES = ["#4F9EFF","#00D9B5","#FFB94A","#FF5F5F","#8B5CF6","#2ECF71"];
+  var anoAtual = 2026;
+
+  set("daAno", anoAtual);
+  set("daKpiAnoLabel", anoAtual);
+  set("daUpdatedAt", "09/09/2026 20:00:00");
+
+  var selAno = document.getElementById("daAnoFiltro");
+  if(selAno){
+    selAno.innerHTML = "";
+    MD.ANOS.slice().reverse().forEach(function(ano){
+      var opt = document.createElement("option");
+      opt.value = ano; opt.textContent = "Exercício " + ano;
+      if(ano === anoAtual) opt.selected = true;
+      selAno.appendChild(opt);
+    });
+  }
+
+  // a. KPIs
+  var totalAdministrativa = 6480000 + MD.randInt(-200000, 200000);
+  var totalJudicial = 3920000 + MD.randInt(-150000, 150000);
+  var totalEmAjuizamento = 1140000 + MD.randInt(-80000, 80000);
+  var totalGeral = totalAdministrativa + totalJudicial + totalEmAjuizamento;
+  set("daTotalGeral", fmtMoney(totalGeral));
+  set("daTotalGeralFoot", "referente ao exercício " + anoAtual);
+  set("daAdministrativa", fmtMoney(totalAdministrativa));
+  set("daAdministrativaFoot", fmtPct(totalAdministrativa/totalGeral*100) + " do total");
+  set("daJudicial", fmtMoney(totalJudicial));
+  set("daJudicialFoot", fmtPct(totalJudicial/totalGeral*100) + " do total");
+  set("daEmAjuizamento", fmtMoney(totalEmAjuizamento));
+  set("daEmAjuizamentoFoot", fmtPct(totalEmAjuizamento/totalGeral*100) + " do total");
+  set("daMaiorTributoValor", "IPTU");
+  set("daMaiorTributoFoot", fmtMoney(totalGeral*0.44) + " em aberto");
+  set("daTotalGeralTodosExercicios", fmtMoney(totalGeral*3.35));
+  set("daTotalGeralTodosExerciciosFoot", "acumulado 1998–" + anoAtual);
+
+  // b. Dívida Ativa por Tributo
+  var tributosDA = ["IPTU","ISS","ITBI","TCA","Taxas Diversas"];
+  var saldosPorTributo = tributosDA.map(function(t, i){ return { tributo: t, saldo: Math.round(totalGeral * [0.44,0.27,0.13,0.09,0.07][i]) }; });
+  renderBarraHorizontal("chartDaPorTributo", saldosPorTributo.map(function(t, i){ return { label: t.tributo, valor: t.saldo, cor: CORES[i % CORES.length] }; }));
+
+  // c. Administrativa x Judicial x Em Ajuizamento (donut, contagem de certidões)
+  var qtdAdmin = 1820, qtdJud = 640, qtdEmAj = 230;
+  var totalCert = qtdAdmin + qtdJud + qtdEmAj;
+  var fatiasAdmJud = [
+    { label: "Administrativa", valor: qtdAdmin, cor: "#4F9EFF" },
+    { label: "Judicial", valor: qtdJud, cor: "#FF5F5F" },
+    { label: "Em Ajuizamento", valor: qtdEmAj, cor: "#FFB94A" }
+  ];
+  var canvasAJ = document.getElementById("daAdminJudicialChart");
+  if(canvasAJ){
+    new Chart(canvasAJ.getContext("2d"), {
+      type: "doughnut",
+      data: { labels: fatiasAdmJud.map(function(f){return f.label;}), datasets: [{ data: fatiasAdmJud.map(function(f){return f.valor;}), backgroundColor: fatiasAdmJud.map(function(f){return f.cor;}), borderWidth: 0 }] },
+      options: { plugins: { legend: { display:false } }, cutout: "68%" }
+    });
+  }
+  var legAJ = document.getElementById("daAdminJudicialLegenda");
+  if(legAJ){
+    legAJ.innerHTML = fatiasAdmJud.map(function(f){
+      var pct = f.valor/totalCert*100;
+      return '<div style="display:flex; align-items:center; gap:8px; font-size:12px; margin-bottom:8px;">' +
+        '<span style="width:10px; height:10px; border-radius:50%; background:' + f.cor + '; flex-shrink:0;"></span>' +
+        '<span style="flex:1;">' + f.label + '</span><span class="mono">' + fmtInt(f.valor) + ' (' + fmtPct(pct) + ')</span></div>';
+    }).join("");
+  }
+
+  // g. Situação das Parcelas (4 fatias)
+  renderBarraHorizontal("chartDaSituacaoParcelas", [
+    { label: "Normal", valor: 41800, cor: "#2ECF71" },
+    { label: "Dívida Ativa administrativa", valor: 6200, cor: "#4F9EFF" },
+    { label: "Ajuizada", valor: 2150, cor: "#FF5F5F" },
+    { label: "Em Ajuizamento", valor: 780, cor: "#FFB94A" }
+  ], fmtInt);
+
+  // d. Taxa de Recuperação
+  var recLancado = totalGeral * 3.35 + 4200000;
+  var recPago = recLancado * 0.223;
+  set("daRecLancado", fmtMoney(recLancado));
+  set("daRecPago", fmtMoney(recPago));
+  set("daRecTaxaPct", fmtPct(recPago/recLancado*100));
+  renderBarraHorizontal("chartDaRecuperacao", [
+    { label: "Pago", valor: recPago, cor: "#2ECF71" },
+    { label: "Ainda em aberto", valor: recLancado - recPago, cor: "#8892A4" }
+  ]);
+
+  // e. Idade dos Débitos
+  var faixasIdade = ["0-1 ano","1-3 anos","3-5 anos","5-10 anos","10-20 anos","20+ anos"];
+  var saldosIdade = [820000, 2340000, 1980000, 3210000, 2460000, 1180000];
+  var canvasIdade = document.getElementById("daIdadeChart");
+  if(canvasIdade){
+    canvasIdade.parentElement.style.minWidth = "560px";
+    new Chart(canvasIdade.getContext("2d"), {
+      type: "bar",
+      data: { labels: faixasIdade, datasets: [{ label: "Saldo", data: saldosIdade, backgroundColor: "#4F9EFF" }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales:{ y:{ ticks:{ callback:function(v){ return (v/1e6).toFixed(1)+"mi"; } } }, x:{ grid:{ display:false } } } }
+    });
+  }
+  set("daIdadeNote", "Saldo atual em dívida ativa agrupado pela idade da inscrição (data de inscrição até " + anoAtual + ").");
+
+  // f. Débitos Passíveis de Inscrição
+  set("daPassivelTotalSaldo", fmtMoney(892000));
+  set("daPassivelTotalParcelas", fmtInt(3140));
+  renderBarraHorizontal("chartDaPassivelPorTributo", tributosDA.map(function(t, i){
+    return { label: t, valor: Math.round(892000 * [0.4,0.25,0.15,0.12,0.08][i]), cor: CORES[i % CORES.length] };
+  }));
+
+  // h. Estoque por Tributo (tabela)
+  var estoqueBody = document.getElementById("daEstoqueTributoBody");
+  if(estoqueBody){
+    estoqueBody.innerHTML = saldosPorTributo.map(function(t){
+      return "<tr><td>" + t.tributo + "</td><td>" + fmtInt(MD.randInt(400, 3200)) + "</td><td class=\"mono\">" + fmtMoney(t.saldo) + "</td></tr>";
+    }).join("");
+  }
+
+  // i. 200 Maiores Devedores (elenco fictício compartilhado — 28 contribuintes, ordenado por saldo)
+  var devedores = MD.CONTRIBUINTES.map(function(c){
+    return {
+      nome: c.nome, cgcCpf: c.doc,
+      saldoAtual: MD.randInt(3200, 210000),
+      certidoes: MD.randInt(1, 9),
+      baixas: MD.randInt(0, 3),
+      protestos: MD.randInt(0, 2)
+    };
+  }).sort(function(a,b){ return b.saldoAtual - a.saldoAtual; });
+  var devBody = document.getElementById("daDevedoresBody");
+  if(devBody){
+    devBody.innerHTML = devedores.map(function(d){
+      return "<tr><td>" + esc(d.nome) + "</td><td class=\"mono\">" + esc(d.cgcCpf) + "</td><td class=\"mono\">" + fmtMoney(d.saldoAtual) +
+        "</td><td>" + d.certidoes + "</td><td>" + (d.baixas || "—") + "</td><td>" + (d.protestos || "—") + "</td></tr>";
+    }).join("");
+  }
+  var devCount = document.getElementById("daDevedoresResultCount");
+  if(devCount) devCount.textContent = fmtInt(devedores.length) + " devedor(es) na lista (demonstração)";
+
+  // j. Rodapé
+  set("daMetodologiaFoot", "Dados de demonstração (protótipo) — valores fictícios gerados client-side em divida-ativa.html, sem fonte real no SILtb.");
+})();
+</script>
 </body>
 </html>
