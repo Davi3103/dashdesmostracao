@@ -230,7 +230,7 @@ input, select{ font-family: inherit; color: var(--ink); background: var(--bg-car
 /* generic KPI row/card (Contribuintes, home, IPTU, resumo etc.) */
 .kpi-row, .iptu-kpi-row, .home-kpi-grid{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 14px;
   margin-bottom: 20px;
 }
@@ -242,10 +242,11 @@ input, select{ font-family: inherit; color: var(--ink); background: var(--bg-car
   padding: 14px 16px;
   box-shadow: var(--shadow-sm);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
+  min-width: 0;
 }
 .kpi-card:hover, .iptu-kpi-card:hover{ transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .kpi-label, .iptu-kpi-label{ font-size: 11.5px; color: var(--ink-dim); font-weight: 600; margin: 0 0 6px; }
-.kpi-value, .iptu-kpi-value{ font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--ink); margin: 0; }
+.kpi-value, .iptu-kpi-value{ font-family: var(--font-mono); font-size: 18px; line-height: 1.25; font-weight: 700; color: var(--ink); margin: 0; overflow-wrap: break-word; word-break: break-word; }
 .kpi-foot, .iptu-kpi-foot{ font-size: 11px; color: var(--ink-dim); margin: 6px 0 0; }
 .kpi-subline{ font-size: 11px; color: var(--teal); margin: 2px 0 0; font-weight: 600; }
 .iptu-kpi-delta{ font-size: 11px; font-weight: 700; margin: 4px 0 0; color: var(--ink-dim); }
