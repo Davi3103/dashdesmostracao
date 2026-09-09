@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>BiebravoSerraClara — Contribuintes &amp; Dívida Ativa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CORREÇÃO (2026-08-10): aplica a classe de tema ANTES do CSS/resto da página renderizar
+     (o script principal, js/app.js, só roda no fim do <body>) — sem isso, a página pisca
+     rápido no tema escuro (padrão do :root) antes de trocar pro claro. Mesma lógica de
+     aplicarTema() em app.js, só que adiantada; app.js continua sendo a fonte da verdade pro
+     resto da sessão (clique no botão, etc.).
+     CORREÇÃO (2026-08-10, 2ª rodada): a chave do localStorage mudou de
+     "biebravoserraclara_tema" pra "biebravoserraclara_tema_v2" — o Davi tinha clicado no toggle em
+     algum momento anterior (quando o padrão ainda era escuro), então o navegador dele já
+     tinha "dark" salvo na chave antiga, e isso sobrescrevia silenciosamente o novo padrão
+     claro. Trocar a chave dá um reset limpo pra todo mundo sem precisar limpar o navegador
+     na mão. -->
+<script>(function(){try{if(localStorage.getItem("biebravoserraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+<aside class="sidebar">
+<nav class="nav-wrap">
+  <a class="tab" href="inicio.html"><i class="ti ti-home"></i>Início</a>
+  <a class="tab" href="index.html"><i class="ti ti-users"></i>Contribuintes</a>
+  <a class="tab" href="imobiliario.html"><i class="ti ti-home-dollar"></i>Imobiliário</a>
+  <a class="tab" href="mobiliario.html"><i class="ti ti-building-store"></i>Mobiliário</a>
+  <a class="tab active" href="outros-tributos.html"><i class="ti ti-receipt-2"></i>Outros Tributos</a>
+  <a class="tab" href="divida-ativa.html"><i class="ti ti-gavel"></i>Dívida Ativa</a>
+  <a class="tab" href="cobranca.html"><i class="ti ti-alert-triangle"></i>Cobrança</a>
+  <a class="tab" href="cobranca-amigavel.html"><i class="ti ti-speakerphone"></i>Cobrança Amigável</a>
+  <a class="tab" href="acao-fiscal.html"><i class="ti ti-clipboard-check"></i>Ação Fiscal</a>
+  <a class="tab" href="certidoes-emitidas.html"><i class="ti ti-certificate"></i>Certidões Emitidas</a>
+  <a class="tab" href="compensacoes.html"><i class="ti ti-transfer"></i>Compensações</a>
+  <a class="tab" href="recuperacao-debitos.html"><i class="ti ti-report-money"></i>Recuperação de Débitos</a>
+  <a class="tab" href="baixas-contabeis.html"><i class="ti ti-file-off"></i>Baixas Contábeis</a>
+  <a class="tab" href="protestos.html"><i class="ti ti-stamp"></i>Protestos</a>
+</nav>
+</aside>
+<div class="main-content">
+
+<div class="ribbon">
+  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API SILtb</div>
+  <div class="ribbon-sep"></div>
+  <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
+  <div class="ribbon-sep"></div>
+  <div class="ribbon-item" id="ribbonClock"><i class="ti ti-clock"></i> —</div>
+  <div class="ribbon-right">BiebravoSerraClara</div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-inner" style="justify-content:center;">
+    <div style="display:flex; align-items:center; gap:16px;">
+      <img src="data:image/png;base64,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" alt="Prefeitura Municipal de Serra Clara" style="height:56px; width:auto; flex-shrink:0;">
+      <div>
+        <p class="brand-eyebrow">Secretaria de Finança Serra Clara  &middot; Registro Municipal</p>
+        <h1 class="brand-title">Contribuintes &amp; Dívida Ativa</h1>
+        <p class="brand-sub">Desenvolvido por Davi Linares </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="wrap">
+
+  <!-- CONSTRUÍDO (24/08/2026) — pedido do Davi: "Conecta no bi de referencia
+       https://serraclara.prefeituranalytics.com.br/outros-tributos, Vai na aba Outros Tributos.
+       Vamos replicar ele no nosso desh, Mesmos Padrão, Clica em tudo, olha todos os dados,
+       gráficos, KPIs, na Outros Tributos por Tipo, ao clicar abre um gráfico ao lado."
+       Exploração completa feita via Claude in Chrome (logado como Roberta) — estrutura
+       observada, de cima a baixo:
+         1. 5 KPIs: Lançado/Arrecadado/Inadimplência/Isenção/Arrecadado (período).
+         2. "Lançado × Arrecadado" (barras, 2018→exercício atual) + "Insights de Outros
+            Tributos" (texto) + "Eficiência de Arrecadação" (gauge, % arrecadado/lançado).
+         3. "Inadimplência por Exercício" (linha) + "Composição do Lançado" (donut:
+            Arrecadado/Inadimplência/Isenção/Suspenso-Outros).
+         4. "Exercícios de Outros Tributos" (tabela: Exercício/Lançado/Arrecadado/
+            Inadimplência/%Arrec.).
+         5. "Outros Tributos por Tipo" (lista clicável, barra por tipo, 11 tipos no total) <->
+            "Detalhe do Tributo" (abre AO LADO ao clicar num item: 4 KPIs + gráfico Lançado×
+            Arrecadado por exercício DO TIPO + "Simulação · Previsão 2027" com slider
+            Conservador/Moderado/Agressivo arrastável, regressão linear ancorada no lançado
+            real do exercício atual).
+       Pills como "Lançado"/"Evolução anual"/"Saldo devedor"/"Outros Tributos" no BI de
+       referência foram testadas e são só RÓTULOS ESTÁTICOS (não reagem a clique) — não
+       replicadas como toggle aqui.
+
+       DADO REAL desde o primeiro dia (24/08/2026) — ao contrário de Cobrança/Ação Fiscal, que
+       nasceram só como scaffold visual, aqui o backend (App\Console\Commands\
+       CalcularOutrosTributosPorTipo) já existia desde 19/08/2026, com metodologia validada em
+       6 rodadas de investigação (ver seu docblock completo) — só faltava o Controller
+       (App\Http\Controllers\Api\OutrosTributosController, criado agora) + esta página.
+
+       DIVERGÊNCIA CONHECIDA E ACEITA vs a referência externa: nossos valores (ex.: Lançado
+       2026 ≈ R$15,7mi) são MENORES que os da referência (≈R$24,4mi) porque lá a cota única
+       (NroParcela=0) parece ser somada JUNTO com o carnê de parcelas 1-10, como se fossem 2
+       dívidas — aqui usamos a mesma metodologia já validada contra o SIL real no resto do
+       projeto (cota única é via ALTERNATIVA, não some com o carnê). Decisão do Davi
+       (19/08/2026): manter nossa metodologia, documentar a diferença em vez de forçar bater
+       com a referência (ver Documentacao-Geral.docx e o docblock do Command).
+
+       "Composição do Lançado" aqui usa a MESMA fórmula/paleta já usada em Mobiliário (TFE/
+       TFHS/ISS, ver renderMobComposicaoDonut em js/app.js): Suspenso/Outros = MAX(0, lançado -
+       arrecadado - inadimplência) — não é a mesma segmentação da referência (que separa
+       Isenção de Suspenso/Outros), porque não temos um valor em R$ de isenção calculado (só
+       contagem, ver isento.qtd abaixo, hoje 0 pros 11 tipos — sem isenção ativa identificada
+       nessas tabelas). "Isenção" no KPI fica R$0,00 com nota honesta, mesmo padrão já usado em
+       Mobiliário.
+  -->
+
+  <section class="section active" id="tab-outros-tributos">
+    <div class="iptu-wrap" id="otWrap">
+
+      <div class="iptu-wrap-head">
+        <span class="iptu-title">Outros Tributos — Lançado, Arrecadado e Composição (Exercício <span id="otAnoLabel">—</span>)</span>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <select id="otAnoFiltro" class="iptu-ano-filtro">
+            <option value="">Carregando anos...</option>
+          </select>
+          <span class="iptu-updated">Dados calculados em <b id="otUpdatedAt">—</b></span>
+        </div>
+      </div>
+      <p id="otIndisponivel" style="font-size:12px; color:var(--ink-dim); margin:6px 4px 0; display:none;">Ainda não calculado — rode <span class="mono">php artisan outros-tributos:calcular-por-tipo</span> (também roda sozinho no Bat das 20h).</p>
+      <p style="font-size:10.5px; color:var(--ink-dim); margin:6px 4px 0;">Reúne os 11 tipos de tributo fora de IPTU/ITBI/ISSQN/TCA/TFE/TFHS (ver lista em "Outros Tributos por Tipo" abaixo). Metodologia validada contra o SIL — valores menores que o BI de referência externo porque lá a cota única parece somar em dobro com o carnê de parcelas; ver <span class="mono">documentacao/Documentacao-Geral.docx</span> seção 3.62.</p>
+
+      <!-- 1. KPIs -->
+      <div class="iptu-kpi-row">
+        <div class="iptu-kpi-card iptu-c-lancado">
+          <p class="iptu-kpi-label">Lançado <span id="otKpiAnoLabel">—</span></p>
+          <p class="iptu-kpi-value mono" id="otLancado">—</p>
+          <p class="iptu-kpi-foot" id="otLancadoFoot">todos os tipos</p>
+        </div>
+        <div class="iptu-kpi-card iptu-c-arrecadado">
+          <p class="iptu-kpi-label">Arrecadado</p>
+          <p class="iptu-kpi-value mono" id="otArrecadado">—</p>
+          <p class="iptu-kpi-foot" id="otArrecadadoFoot">do lançado</p>
+        </div>
+        <div class="iptu-kpi-card iptu-c-inadimplencia">
+          <p class="iptu-kpi-label">Inadimplência</p>
+          <p class="iptu-kpi-value mono" id="otInadimplencia">—</p>
+          <p class="iptu-kpi-foot" id="otInadimplenciaFoot">do lançado</p>
+        </div>
+        <div class="iptu-kpi-card iptu-c-isento">
+          <p class="iptu-kpi-label">Isenção</p>
+          <p class="iptu-kpi-value mono" id="otIsencao">R$ 0,00</p>
+          <p class="iptu-kpi-foot" id="otIsencaoFoot">sem isenções identificadas na base</p>
+        </div>
+        <div class="iptu-kpi-card iptu-c-lancado">
+          <p class="iptu-kpi-label">Arrecadado (período)</p>
+          <p class="iptu-kpi-value mono" id="otArrecPeriodo">—</p>
+          <p class="iptu-kpi-foot" id="otArrecPeriodoFoot">&nbsp;</p>
+        </div>
+      </div>
+
+      <!-- 2. Lançado x Arrecadado + Insights + Eficiência -->
+      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:14px;" class="ot-top-row">
+        <div class="panel" style="flex:1.3; min-width:280px; margin-bottom:0;">
+          <h3 style="margin:0;">Lançado &times; Arrecadado</h3>
+          <p class="panel-sub" style="margin:4px 0 10px;">Evolução anual agregada (soma dos 11 tipos) + previsão 2027</p>
+          <div style="height:240px;">
+            <canvas id="otEvolucaoChart"></canvas>
+          </div>
+        </div>
+        <div class="itbi-insights-card" style="flex:1; min-width:240px;">
+          <div class="itbi-insights-head">
+            <span class="itbi-insights-icon">◎</span>
+            <span class="itbi-insights-title">Insights de Outros Tributos</span>
+          </div>
+          <ul class="itbi-insights-list" id="otInsightsList">
+            <li>Ainda não calculado.</li>
+          </ul>
+        </div>
+        <div class="panel" style="flex:1; min-width:220px; margin-bottom:0;">
+          <h3 style="margin:0;">Eficiência de Arrecadação</h3>
+          <p class="panel-sub" style="margin:4px 0 10px;">% do lançado arrecadado no exercício selecionado</p>
+          <div style="height:150px; position:relative;">
+            <canvas id="otEficienciaGauge"></canvas>
+            <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:6px; pointer-events:none;">
+              <span style="font-size:20px; font-weight:700;" id="otEficienciaPct">—</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-top:6px;">
+            <span style="color:var(--good, #2ecc71);"><b id="otEficienciaArrecadado">—</b> Arrecadado</span>
+            <span style="color:var(--bad, #ff5f5f);"><b id="otEficienciaInadimplencia">—</b> Inadimplência</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Inadimplência por Exercício + Composição do Lançado -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:14px;" class="ot-mid-row">
+        <div class="iptu-evol-card">
+          <div class="iptu-evol-head">
+            <span class="iptu-evol-title">Inadimplência por Exercício</span>
+            <span style="font-size:11px; color:var(--ink-dim);">Saldo devedor</span>
+          </div>
+          <div style="height:220px;">
+            <canvas id="otInadimplenciaChart"></canvas>
+          </div>
+        </div>
+        <div class="iptu-evol-card">
+          <div class="iptu-evol-head">
+            <span class="iptu-evol-title">Composição do Lançado</span>
+            <span style="font-size:11px; color:var(--ink-dim);" id="otComposicaoAno">—</span>
+          </div>
+          <div style="height:180px; position:relative;">
+            <canvas id="otComposicaoDonut"></canvas>
+          </div>
+          <div id="otComposicaoLegenda" style="margin-top:10px; font-size:12px;"></div>
+        </div>
+      </div>
+
+      <!-- 4. Exercícios de Outros Tributos -->
+      <div class="panel" style="margin-top:14px;">
+        <h3 style="margin:0;">Exercícios de Outros Tributos</h3>
+        <p class="panel-sub" style="margin:4px 0 14px;">Lançado, arrecadado e inadimplência agregados, por exercício</p>
+        <div class="table-panel">
+          <table>
+            <thead>
+              <tr><th>Exercício</th><th>Lançado</th><th>Arrecadado</th><th>Inadimplência</th><th>% Arrec.</th></tr>
+            </thead>
+            <tbody id="otExerciciosTabelaBody">
+              <tr><td colspan="5" class="addr-line" style="padding:20px; text-align:center;">Ainda não calculado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. Outros Tributos por Tipo <-> Detalhe do Tributo -->
+      <div class="itbi-evol-insights-row" style="margin-top:14px;">
+        <div class="panel" style="flex:1; min-width:0; margin-bottom:0;">
+          <h3 style="margin:0;">Outros Tributos por Tipo <span id="otTipoAnoTitulo"></span></h3>
+          <p class="panel-sub" style="margin:4px 0 14px;">Composição do grupo "Outros Tributos" por tipo — clique num item pra ver o detalhe e a simulação 2027</p>
+          <div style="margin-bottom:10px; background:var(--panel-alt, rgba(255,255,255,0.04)); border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12.5px;">Total de Outros Tributos</span>
+            <b class="mono" id="otTipoTotalLancado">—</b>
+          </div>
+          <div id="otTiposLista">
+            <p class="addr-line" style="padding:20px;">Ainda não calculado.</p>
+          </div>
+        </div>
+
+        <div class="panel" style="flex:1; min-width:0; margin-bottom:0;" id="otDetalhePanel">
+          <h3 style="margin:0;" id="otDetalheTitulo">Detalhe do Tributo</h3>
+          <p class="panel-sub" style="margin:4px 0 14px;" id="otDetalheSub">Selecione um item em "Outros Tributos por Tipo" pra ver a evolução detalhada.</p>
+          <div id="otDetalheConteudo">
+            <p class="addr-line" style="padding:20px;">Nenhum tipo selecionado ainda.</p>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:10.5px; color:var(--ink-dim); margin:14px 4px 0;" id="otMetodologiaFoot">Lançado = soma de todos os eventos das parcelas (NroParcela&lt;&gt;0), dedupados por (IdParcela,CodEvento) — cota única excluída pra não duplicar o carnê. Arrecadado = dbo.ParcelasBaixadas.VlrPago de todas as parcelas. Inadimplência = saldo vencido de dbo.ParcelasAtualizadas, com correção Febraban (baixas confirmadas mas ainda não refletidas no saldo). Ver App\Console\Commands\CalcularOutrosTributosPorTipo pra metodologia completa.</p>
+
+    </div>
+  </section>
+
+</div>
+
+</div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<script src="js/app.js?v=20260819c"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ============================================================================================
+  // CONTRATO DE DADOS — GET /api/outros-tributos/cache (App\Http\Controllers\Api\
+  // OutrosTributosController::cache(), lê json/cache-outros-tributos-geral.json):
+  // {
+  //   disponivel: true, ano, calculadoEm,
+  //   lancado, arrecadado, aberto, inadimplencia,
+  //   isento: { qtd, somaFatorPercentual },
+  //   arrecadadoPeriodo, lancadoPeriodo,
+  //   evolucaoAnos: [{ ano, lancado, arrecadado, aberto, inadimplencia }, ...]
+  // }
+  //
+  // GET /api/outros-tributos/tipos (OutrosTributosController::tipos(), lê
+  // json/cache-outros-tributos-tipos.json):
+  // {
+  //   disponivel: true, calculadoEm,
+  //   tipos: [{
+  //     chave, nome, codTributo: [n, ...],
+  //     anoAtual: { ano, lancado, qtdGuiasLancado, arrecadado, aberto, inadimplencia },
+  //     evolucaoAnos: [{ ano, lancado, qtdGuiasLancado, arrecadado, aberto, inadimplencia }, ...],
+  //     previsao2027: { ano, lancado },   // regressão linear simples sobre evolucaoAnos
+  //     isento: { qtd, somaFatorPercentual },
+  //     demorouMs
+  //   }, ...]
+  // }
+  // ============================================================================================
+
+  function fmtMoney(v){
+    v = Number(v) || 0;
+    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+  function fmtInt(v){ return (Number(v) || 0).toLocaleString("pt-BR"); }
+  function fmtPct(v){ return (Number(v) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%"; }
+  function fmtPctAssinado(v){ v = Number(v) || 0; return (v >= 0 ? "+" : "") + v.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%"; }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  var otGeralData = null;
+  var otTiposData = null;
+  var otAnoSelecionado = null;
+  var otTipoSelecionado = null;
+  var otCharts = {};
+
+  function destruir(id){ if(otCharts[id]){ otCharts[id].destroy(); delete otCharts[id]; } }
+
+  // ---- registro do ano selecionado (KPIs/gauge/donut mudam com o filtro; os gráficos
+  // históricos — evolução, inadimplência, tabela, lista por tipo — sempre mostram TUDO) ----
+  function registroDoAno(evolucaoAnos, ano){
+    for(var i = 0; i < evolucaoAnos.length; i++){
+      if(evolucaoAnos[i].ano === ano) return evolucaoAnos[i];
+    }
+    return null;
+  }
+
+  // ---- 1. KPIs ----
+  function renderKpis(reg, geral){
+    document.getElementById("otLancado").textContent = fmtMoney(reg.lancado);
+    document.getElementById("otArrecadado").textContent = fmtMoney(reg.arrecadado);
+    var pct = reg.lancado ? (reg.arrecadado / reg.lancado * 100) : 0;
+    document.getElementById("otArrecadadoFoot").textContent = "do lançado " + fmtPct(pct);
+    document.getElementById("otInadimplencia").textContent = fmtMoney(reg.inadimplencia);
+    var pctInad = reg.lancado ? (reg.inadimplencia / reg.lancado * 100) : 0;
+    document.getElementById("otInadimplenciaFoot").textContent = "do lançado " + fmtPct(pctInad);
+    document.getElementById("otKpiAnoLabel").textContent = reg.ano;
+    document.getElementById("otAnoLabel").textContent = reg.ano;
+
+    var isentoQtd = (geral.isento && geral.isento.qtd) || 0;
+    document.getElementById("otIsencaoFoot").textContent = isentoQtd
+      ? (fmtInt(isentoQtd) + " isenção(ões) ativa(s) identificada(s), sem valor em R$ calculado ainda")
+      : "sem isenções ativas identificadas na base (dbo.Isencoes) pra estes tributos";
+
+    document.getElementById("otArrecPeriodo").textContent = fmtMoney(geral.arrecadadoPeriodo);
+    var pctPeriodo = geral.lancadoPeriodo ? (geral.arrecadadoPeriodo / geral.lancadoPeriodo * 100) : 0;
+    document.getElementById("otArrecPeriodoFoot").innerHTML = "lançado " + fmtMoney(geral.lancadoPeriodo) + "<br>" + fmtPct(pctPeriodo) + " acumulado no período";
+  }
+
+  // ---- 2. Insights ----
+  function renderInsights(reg, regAnterior, geral){
+    var itens = [];
+    var pct = reg.lancado ? (reg.arrecadado / reg.lancado * 100) : 0;
+    itens.push("Em " + reg.ano + ", Outros Tributos lançou " + fmtMoney(reg.lancado) + " e arrecadou " + fmtMoney(reg.arrecadado) + " (" + fmtPct(pct) + " do lançado).");
+    var pctInad = reg.lancado ? (reg.inadimplencia / reg.lancado * 100) : 0;
+    itens.push("Inadimplência de " + fmtMoney(reg.inadimplencia) + " em " + reg.ano + " — " + fmtPct(pctInad) + " do que foi lançado.");
+    if(regAnterior && regAnterior.arrecadado){
+      var variacao = (reg.arrecadado - regAnterior.arrecadado) / regAnterior.arrecadado * 100;
+      itens.push("Arrecadação " + (variacao >= 0 ? "cresceu" : "caiu") + " " + fmtPctAssinado(variacao) + " vs " + regAnterior.ano + "; acumulado de " + fmtMoney(geral.arrecadadoPeriodo) + " no período.");
+    }
+    document.getElementById("otInsightsList").innerHTML = itens.map(function(t){ return "<li>" + esc(t) + "</li>"; }).join("");
+  }
+
+  // ---- 2b. Lançado x Arrecadado (evolução + previsão) ----
+  function renderEvolucaoChart(evolucaoAnos, previsaoGeral){
+    var labels = evolucaoAnos.map(function(r){ return String(r.ano); });
+    var lancado = evolucaoAnos.map(function(r){ return r.lancado || 0; });
+    var arrecadado = evolucaoAnos.map(function(r){ return r.arrecadado || 0; });
+    var qtdReal = evolucaoAnos.length;
+    if(previsaoGeral && previsaoGeral.ano){
+      labels.push(previsaoGeral.ano + " · prev");
+      lancado.push(previsaoGeral.lancado);
+      arrecadado.push(null);
+    }
+    function cores(corSolida, corClara){
+      return labels.map(function(_, i){ return i < qtdReal ? corSolida : corClara; });
+    }
+    var canvas = document.getElementById("otEvolucaoChart");
+    if(!canvas) return;
+    destruir("otEvolucaoChart");
+    otCharts.otEvolucaoChart = new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          { label: "Lançado", data: lancado, backgroundColor: cores("#4F9EFF", "#274a73") },
+          { label: "Arrecadado", data: arrecadado, backgroundColor: cores("#00D9B5", "#0f5a4c") }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { boxWidth: 12, color: "#8892A4", font: { family: "Figtree" } } },
+          tooltip: { callbacks: { label: function(ctx){ return ctx.raw == null ? null : ctx.dataset.label + ": " + fmtMoney(ctx.raw); } } }
+        },
+        scales: {
+          y: { ticks: { color: "#8892A4", callback: function(v){ return (v/1e6).toFixed(1) + "mi"; } }, grid: { color: "rgba(255,255,255,0.06)" } },
+          x: { ticks: { color: "#8892A4" }, grid: { display:false } }
+        }
+      }
+    });
+  }
+
+  // ---- 2c. Eficiência (gauge) — mesmo truque doughnut+rotation já usado em Mobiliário ----
+  function renderEficienciaGauge(pct, arrecadado, inadimplencia){
+    document.getElementById("otEficienciaPct").textContent = fmtPct(pct);
+    document.getElementById("otEficienciaArrecadado").textContent = fmtMoney(arrecadado);
+    document.getElementById("otEficienciaInadimplencia").textContent = fmtMoney(inadimplencia);
+    var canvas = document.getElementById("otEficienciaGauge");
+    if(!canvas) return;
+    destruir("otEficienciaGauge");
+    var pctClamp = Math.max(0, Math.min(100, pct));
+    otCharts.otEficienciaGauge = new Chart(canvas.getContext("2d"), {
+      type: "doughnut",
+      data: { datasets: [{ data: [pctClamp, 100 - pctClamp], backgroundColor: ["#FFB94A", "rgba(255,255,255,0.08)"], borderWidth: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        rotation: -90, circumference: 180, cutout: "75%",
+        plugins: { legend: { display:false }, tooltip: { enabled:false } }
+      }
+    });
+  }
+
+  // ---- 3a. Inadimplência por Exercício ----
+  function renderInadimplenciaChart(evolucaoAnos){
+    var canvas = document.getElementById("otInadimplenciaChart");
+    if(!canvas) return;
+    var labels = evolucaoAnos.map(function(r){ return String(r.ano); });
+    var valores = evolucaoAnos.map(function(r){ return r.inadimplencia || 0; });
+    destruir("otInadimplenciaChart");
+    otCharts.otInadimplenciaChart = new Chart(canvas.getContext("2d"), {
+      type: "line",
+      data: { labels: labels, datasets: [{ data: valores, borderColor: "#FF5F5F", backgroundColor: "rgba(255,95,95,0.15)", fill: true, tension: 0.3, pointRadius: 3 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display:false }, tooltip: { callbacks: { label: function(ctx){ return fmtMoney(ctx.raw || 0); } } } },
+        scales: {
+          y: { ticks: { color: "#8892A4", callback: function(v){ return (v/1e6).toFixed(1) + "mi"; } }, grid: { color: "rgba(255,255,255,0.06)" } },
+          x: { ticks: { color: "#8892A4" }, grid: { display:false } }
+        }
+      }
+    });
+  }
+
+  // ---- 3b. Composição do Lançado (mesma fórmula/paleta de renderMobComposicaoDonut) ----
+  function renderComposicaoDonut(ano, lancado, arrecadado, inadimplencia){
+    document.getElementById("otComposicaoAno").textContent = "Exercício " + ano;
+    var suspenso = Math.max(0, lancado - arrecadado - inadimplencia);
+    var canvas = document.getElementById("otComposicaoDonut");
+    if(canvas){
+      destruir("otComposicaoDonut");
+      otCharts.otComposicaoDonut = new Chart(canvas.getContext("2d"), {
+        type: "doughnut",
+        data: {
+          labels: ["Arrecadado", "Inadimplência", "Suspenso/Outros"],
+          datasets: [{ data: [arrecadado, inadimplencia, suspenso], backgroundColor: ["#00D9B5", "#FF5F5F", "#8892A4"], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display:false }, tooltip: { callbacks: { label: function(ctx){ return ctx.label + ": " + fmtMoney(ctx.raw || 0); } } } }
+        }
+      });
+    }
+    var legEl = document.getElementById("otComposicaoLegenda");
+    if(legEl){
+      var total = lancado || 1;
+      function linha(cor, label, valor){
+        return '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+          '<span><span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:' + cor + '; margin-right:6px;"></span>' + label + '</span>' +
+          '<span class="mono">' + fmtMoney(valor) + ' (' + fmtPct(valor/total*100) + ')</span></div>';
+      }
+      legEl.innerHTML = linha("#00D9B5", "Arrecadado", arrecadado) + linha("#FF5F5F", "Inadimplência", inadimplencia) + linha("#8892A4", "Suspenso/Outros (inclui isenção não valorada)", suspenso);
+    }
+  }
+
+  // ---- 4. Exercícios (tabela) ----
+  function renderExerciciosTabela(evolucaoAnos){
+    var body = document.getElementById("otExerciciosTabelaBody");
+    if(!evolucaoAnos || !evolucaoAnos.length){
+      body.innerHTML = '<tr><td colspan="5" class="addr-line" style="padding:20px; text-align:center;">Ainda não calculado.</td></tr>';
+      return;
+    }
+    body.innerHTML = evolucaoAnos.slice().reverse().map(function(r){
+      var pct = r.lancado ? (r.arrecadado / r.lancado * 100) : 0;
+      return "<tr><td>" + r.ano + "</td><td class=\"mono\">" + fmtMoney(r.lancado) + "</td><td class=\"mono\">" + fmtMoney(r.arrecadado) +
+        "</td><td class=\"mono\">" + fmtMoney(r.inadimplencia) + "</td><td>" + fmtPct(pct) + "</td></tr>";
+    }).join("");
+  }
+
+  // ---- 5. Outros Tributos por Tipo <-> Detalhe do Tributo ----
+  function renderTiposLista(tipos, ano, totalLancadoAno){
+    document.getElementById("otTipoAnoTitulo").textContent = "· " + ano;
+    document.getElementById("otTipoTotalLancado").textContent = fmtMoney(totalLancadoAno);
+
+    var comValorNoAno = tipos.map(function(t){
+      var r = registroDoAno(t.evolucaoAnos, ano) || { lancado: 0, arrecadado: 0 };
+      return { tipo: t, lancado: r.lancado || 0, arrecadado: r.arrecadado || 0 };
+    }).sort(function(a, b){ return b.lancado - a.lancado; });
+
+    var maior = Math.max.apply(null, comValorNoAno.map(function(x){ return x.lancado; })) || 1;
+    var lista = document.getElementById("otTiposLista");
+    lista.innerHTML = comValorNoAno.map(function(x){
+      var pctArrec = x.lancado ? (x.arrecadado / x.lancado * 100) : 0;
+      var pctBarra = Math.max(2, x.lancado / maior * 100);
+      var ativo = otTipoSelecionado === x.tipo.chave;
+      return '<div class="ot-tipo-item' + (ativo ? ' ot-tipo-item-ativo' : '') + '" data-chave="' + esc(x.tipo.chave) + '" style="cursor:pointer; margin-bottom:12px;' + (ativo ? ' background:rgba(79,158,255,0.08); border-radius:8px; padding:6px 8px;' : '') + '">' +
+        '<div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">' +
+        '<span>' + esc(x.tipo.nome) + '</span>' +
+        '<span style="text-align:right;"><b class="mono">' + fmtMoney(x.lancado) + '</b><br>' +
+        '<span style="font-size:11px; color:var(--ink-dim);">' + fmtMoney(x.arrecadado) + ' arrec. (' + fmtPct(pctArrec) + ')</span></span>' +
+        '</div>' +
+        '<div style="background:var(--line); border-radius:5px; height:8px; overflow:hidden;">' +
+        '<div style="width:' + pctBarra + '%; background:#4F9EFF; height:100%; border-radius:5px;"></div>' +
+        '</div></div>';
+    }).join("");
+
+    lista.querySelectorAll(".ot-tipo-item").forEach(function(el){
+      el.addEventListener("click", function(){
+        var chave = el.getAttribute("data-chave");
+        var t = tipos.filter(function(x){ return x.chave === chave; })[0];
+        if(t){ otTipoSelecionado = chave; abrirDetalheTributo(t, ano, totalLancadoAno); renderTiposLista(tipos, ano, totalLancadoAno); }
+      });
+    });
+  }
+
+  function abrirDetalheTributo(tipo, anoSelecionado, totalLancadoAno){
+    document.getElementById("otDetalheTitulo").textContent = "Detalhe · " + tipo.nome;
+    document.getElementById("otDetalheSub").textContent = "Lançado × Arrecadado por exercício (histórico completo do tipo)";
+
+    var regAno = registroDoAno(tipo.evolucaoAnos, anoSelecionado) || tipo.anoAtual;
+    var pctArrec = regAno.lancado ? (regAno.arrecadado / regAno.lancado * 100) : 0;
+    var acumuladoLancado = tipo.evolucaoAnos.reduce(function(s, r){ return s + (r.lancado || 0); }, 0);
+    var acumuladoArrecadado = tipo.evolucaoAnos.reduce(function(s, r){ return s + (r.arrecadado || 0); }, 0);
+
+    var html = '<div class="iptu-kpi-row" style="grid-template-columns:repeat(2,1fr); margin-bottom:12px;">' +
+      '<div class="iptu-kpi-card iptu-c-lancado"><p class="iptu-kpi-label">Lançado ' + regAno.ano + '</p><p class="iptu-kpi-value mono">' + fmtMoney(regAno.lancado) + '</p></div>' +
+      '<div class="iptu-kpi-card iptu-c-arrecadado"><p class="iptu-kpi-label">Arrecadado ' + regAno.ano + '</p><p class="iptu-kpi-value mono">' + fmtMoney(regAno.arrecadado) + '</p><p class="iptu-kpi-foot">' + fmtPct(pctArrec) + ' do lançado</p></div>' +
+      '<div class="iptu-kpi-card iptu-c-inadimplencia"><p class="iptu-kpi-label">Inadimplência ' + regAno.ano + '</p><p class="iptu-kpi-value mono">' + fmtMoney(regAno.inadimplencia) + '</p></div>' +
+      '<div class="iptu-kpi-card iptu-c-lancado"><p class="iptu-kpi-label">Acumulado no período</p><p class="iptu-kpi-value mono">' + fmtMoney(acumuladoArrecadado) + '</p><p class="iptu-kpi-foot">de ' + fmtMoney(acumuladoLancado) + ' lançado</p></div>' +
+      '</div>' +
+      '<div style="height:200px;"><canvas id="otDetalheChart"></canvas></div>' +
+      '<div style="margin-top:16px;" id="otSimulacaoBox"></div>';
+
+    document.getElementById("otDetalheConteudo").innerHTML = html;
+
+    var labels = tipo.evolucaoAnos.map(function(r){ return String(r.ano); });
+    var lancado = tipo.evolucaoAnos.map(function(r){ return r.lancado || 0; });
+    var arrecadado = tipo.evolucaoAnos.map(function(r){ return r.arrecadado || 0; });
+    destruir("otDetalheChart");
+    var canvas = document.getElementById("otDetalheChart");
+    if(canvas){
+      otCharts.otDetalheChart = new Chart(canvas.getContext("2d"), {
+        type: "bar",
+        data: { labels: labels, datasets: [
+          { label: "Lançado", data: lancado, backgroundColor: "#4F9EFF" },
+          { label: "Arrecadado", data: arrecadado, backgroundColor: "#00D9B5" }
+        ]},
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 10, color: "#8892A4", font: { family: "Figtree" } } },
+            tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ": " + fmtMoney(ctx.raw || 0); } } }
+          },
+          scales: {
+            y: { ticks: { color: "#8892A4", callback: function(v){ return (v/1e6).toFixed(1) + "mi"; } }, grid: { color: "rgba(255,255,255,0.06)" } },
+            x: { ticks: { color: "#8892A4" }, grid: { display:false } }
+          }
+        }
+      });
+    }
+
+    renderSimulacao(tipo);
+  }
+
+  // Simulação · Previsão 2027 — regressão linear já calculada no Command (previsao2027.lancado
+  // = cenário "Moderado", 100% do crescimento projetado). Slider escala esse delta entre 50%
+  // (Conservador) e 150% (Agressivo), mesma semântica descrita no BI de referência.
+  function renderSimulacao(tipo){
+    var box = document.getElementById("otSimulacaoBox");
+    if(!box) return;
+    if(!tipo.previsao2027 || tipo.previsao2027.lancado == null || !tipo.anoAtual || !tipo.anoAtual.lancado){
+      box.innerHTML = '<p class="addr-line" style="padding:10px 0;">Histórico curto demais pra projetar 2027 (menos de 2 exercícios).</p>';
+      return;
+    }
+    var base = tipo.anoAtual.lancado;
+    var growth = tipo.previsao2027.lancado - base;
+    box.innerHTML =
+      '<h4 style="margin:0 0 4px;">Simulação &middot; Previsão ' + tipo.previsao2027.ano + '</h4>' +
+      '<p class="panel-sub" style="margin:0 0 10px; font-size:11.5px;">Regressão linear sobre o histórico de Lançado (desde ' + tipo.evolucaoAnos[0].ano + '), ancorada no lançado real de ' + tipo.anoAtual.ano + ' (' + fmtMoney(base) + '). Arraste entre o cenário conservador (50% do crescimento projetado) e o agressivo (150%) — estimativa pra planejamento, não uma garantia.</p>' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+      '<span style="font-size:12px;">Nível de crescimento simulado</span>' +
+      '<b class="mono" id="otSimPct">—</b></div>' +
+      '<input type="range" id="otSimSlider" min="0" max="100" value="50" style="width:100%;">' +
+      '<div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-dim); margin-top:2px;">' +
+      '<span>Conservador</span><span>Moderado</span><span>Agressivo</span></div>' +
+      '<div style="text-align:center; margin-top:12px; padding:10px; background:var(--panel-alt, rgba(255,255,255,0.04)); border-radius:8px;">' +
+      '<span style="font-size:11.5px; color:var(--ink-dim);">Lançado projetado em ' + tipo.previsao2027.ano + '</span><br>' +
+      '<span style="font-size:20px; font-weight:700;" id="otSimValor">—</span></div>';
+
+    function atualizar(nivel){
+      var fator = 0.5 + (nivel / 100);
+      var projetado = Math.max(0, base + growth * fator);
+      var pctCresc = base ? ((projetado - base) / base * 100) : 0;
+      document.getElementById("otSimPct").textContent = fmtPctAssinado(pctCresc);
+      document.getElementById("otSimValor").textContent = fmtMoney(projetado);
+    }
+    var slider = document.getElementById("otSimSlider");
+    slider.addEventListener("input", function(){ atualizar(Number(slider.value)); });
+    atualizar(50);
+  }
+
+  // ---- Filtro de Exercício ----
+  function montarFiltroAno(evolucaoAnos, anoAtual){
+    var sel = document.getElementById("otAnoFiltro");
+    if(!evolucaoAnos || !evolucaoAnos.length){
+      sel.innerHTML = '<option value="">Sem exercícios calculados</option>';
+      return;
+    }
+    sel.innerHTML = "";
+    evolucaoAnos.slice().reverse().forEach(function(r){
+      var opt = document.createElement("option");
+      opt.value = r.ano;
+      opt.textContent = "Exercício " + r.ano;
+      sel.appendChild(opt);
+    });
+    sel.value = String(anoAtual);
+    sel.onchange = function(){
+      var ano = Number(sel.value);
+      if(!ano || !otGeralData) return;
+      otAnoSelecionado = ano;
+      aplicarFiltroAno();
+    };
+  }
+
+  function aplicarFiltroAno(){
+    if(!otGeralData || !otGeralData.disponivel) return;
+    var evolucaoAnos = otGeralData.evolucaoAnos || [];
+    var idx = -1;
+    for(var i = 0; i < evolucaoAnos.length; i++){ if(evolucaoAnos[i].ano === otAnoSelecionado) idx = i; }
+    if(idx === -1) return;
+    var reg = evolucaoAnos[idx];
+    var regAnterior = idx > 0 ? evolucaoAnos[idx - 1] : null;
+
+    renderKpis(reg, otGeralData);
+    renderInsights(reg, regAnterior, otGeralData);
+    var pct = reg.lancado ? (reg.arrecadado / reg.lancado * 100) : 0;
+    renderEficienciaGauge(pct, reg.arrecadado, reg.inadimplencia);
+    renderComposicaoDonut(reg.ano, reg.lancado, reg.arrecadado, reg.inadimplencia);
+
+    if(otTiposData && otTiposData.disponivel && otTiposData.tipos){
+      renderTiposLista(otTiposData.tipos, reg.ano, reg.lancado);
+    }
+  }
+
+  function renderGeral(data){
+    var indisponivelEl = document.getElementById("otIndisponivel");
+    if(!data || !data.disponivel){
+      if(indisponivelEl) indisponivelEl.style.display = "block";
+      document.getElementById("otAnoFiltro").innerHTML = '<option value="">Sem exercícios calculados</option>';
+      return;
+    }
+    if(indisponivelEl) indisponivelEl.style.display = "none";
+    otGeralData = data;
+    otAnoSelecionado = data.ano;
+
+    var quando = data.calculadoEm ? new Date(data.calculadoEm).toLocaleString("pt-BR") : "—";
+    document.getElementById("otUpdatedAt").textContent = quando;
+
+    montarFiltroAno(data.evolucaoAnos || [], data.ano);
+    renderExerciciosTabela(data.evolucaoAnos || []);
+    renderInadimplenciaChart(data.evolucaoAnos || []);
+
+    // Previsão geral pra 2027 = soma das previsões por tipo (já calculadas por regressão linear
+    // própria de cada tipo no Command) — evita rodar uma 2ª regressão no cliente sobre a série
+    // agregada, que divergiria da soma das partes.
+    if(otTiposData && otTiposData.disponivel && otTiposData.tipos){
+      var previsaoGeral = otTiposData.tipos.reduce(function(acc, t){
+        if(t.previsao2027 && t.previsao2027.lancado != null){
+          acc.lancado += t.previsao2027.lancado;
+          acc.ano = t.previsao2027.ano;
+        }
+        return acc;
+      }, { ano: null, lancado: 0 });
+      renderEvolucaoChart(data.evolucaoAnos || [], previsaoGeral.ano ? previsaoGeral : null);
+    } else {
+      renderEvolucaoChart(data.evolucaoAnos || [], null);
+    }
+
+    aplicarFiltroAno();
+  }
+
+  function renderTipos(data){
+    otTiposData = data;
+    if(!data || !data.disponivel || !data.tipos || !data.tipos.length) return;
+    // Se o cache geral já chegou antes, re-renderiza o que depende de tipos (evolução com
+    // previsão + lista por tipo); senão, aplicarFiltroAno()/renderGeral() cuidam disso quando
+    // o cache geral chegar (Promise.all abaixo garante os 2 antes de desenhar qualquer coisa).
+  }
+
+  function carregarOutrosTributos(){
+    Promise.all([
+      fetch("/api/outros-tributos/cache").then(function(r){ return r.json(); }),
+      fetch("/api/outros-tributos/tipos").then(function(r){ return r.json(); })
+    ]).then(function(results){
+      renderTipos(results[1]);
+      renderGeral(results[0]);
+    }).catch(function(err){
+      console.error("Erro ao carregar Outros Tributos:", err);
+      var indisponivelEl = document.getElementById("otIndisponivel");
+      if(indisponivelEl){
+        indisponivelEl.style.display = "block";
+        indisponivelEl.textContent = "Erro ao carregar dados — veja o console.";
+      }
+    });
+  }
+
+  if(document.getElementById("tab-outros-tributos")) carregarOutrosTributos();
+})();
+</script>
+</body>
+</html>
