@@ -874,6 +874,7 @@
     return {
       disponivel: true,
       calculadoEm: MD.agora2026(),
+      totalLancado: round2(todasAcoes.reduce(function (s, a) { return s + a.vlrLancado; }, 0)),
       todasAcoes: todasAcoes,
       porSituacao: Object.keys(porSituacaoMapa).map(function (k) { return { situacao: k, qtd: porSituacaoMapa[k] }; }),
       porExercicio: porExercicio,
@@ -903,7 +904,25 @@
     "/api/compensacoes/cache": function () { return compensacoesCache(); },
     "/api/compensacoes/buscar": function (params) { return compensacoesBuscar(params); },
     "/api/recuperacao-debitos/cache": function () { return recuperacaoDebitosCache(); },
-    "/api/acao-fiscal/cache": function () { return acaoFiscalCache(); }
+    "/api/acao-fiscal/cache": function () { return acaoFiscalCache(); },
+
+    // Cards da página Início (inicio.html) — resumo de 1 KPI por aba. index.html,
+    // imobiliario.html, mobiliario.html e divida-ativa.html são páginas estáticas (sem fetch,
+    // números fixos no próprio HTML/script da página), então esses 4 endpoints não existiam
+    // ainda; valores abaixo aproximam o que aparece hoje em cada página (não são recalculados
+    // ao vivo a partir delas, só mantidos na mesma ordem de grandeza).
+    "/api/dashboard-data/resumo": function () {
+      return { disponivel: true, calculadoEm: MD.agora2026(), qtdContribuintes: 1452 };
+    },
+    "/api/iptu/lancado-cache": function () {
+      return { disponivel: true, calculadoEm: MD.agora2026(), totalLancado: 56211071.84 };
+    },
+    "/api/mobiliario/cadastro/kpis-cache": function () {
+      return { disponivel: true, calculadoEm: MD.agora2026(), totalAtivas: 26412 };
+    },
+    "/api/divida-ativa/cache": function () {
+      return { disponivel: true, calculadoEm: MD.agora2026(), totalGeral: 38659000 };
+    }
   };
 
   var PATTERNS = [
