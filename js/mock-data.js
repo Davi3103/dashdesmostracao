@@ -68,9 +68,8 @@
   var PESSOAS_FISICAS = CONTRIBUINTES.filter(function (c) { return c.tipo === "F"; });
   var PESSOAS_JURIDICAS = CONTRIBUINTES.filter(function (c) { return c.tipo === "J"; });
 
-  // ---- operadores/usuários fictícios (login curto tipo "NomeIniciaisSetor", mesmo estilo do
-  // exemplo "CalebeAM" citado no contrato de dados de cobranca.html) ----
-  var OPERADORES = ["CalebeAM", "RobertaSF", "MarceloTN", "ElianeCP", "FabioRD", "PatriciaGF", "AndreLM", "SimoneVC", "DouglasHB", "LuciaMR"];
+  // ---- operadores/usuários fictícios (login curto tipo "NomeIniciais") ----
+  var OPERADORES = ["TiagoRM", "BiancaSF", "HenriqueVL", "CamilaDP", "RodrigoBN", "LarissaTC", "GustavoPM", "RafaelaSQ", "BrunoAL", "TalitaMS"];
 
   var TRIBUTOS_NOMES = ["IPTU", "ISS", "ITBI", "TCA", "TFE", "TFHS", "Taxas Diversas", "Contribuição de Melhoria"];
 
