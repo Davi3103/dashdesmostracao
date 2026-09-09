@@ -17,8 +17,7 @@
      na mão. -->
 <script>(function(){try{if(localStorage.getItem("biebravoserraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- CORREÇÃO (2026-08-10): Poppins adicionada — é a fonte que o outro BI da Prefeitura usa
-     (conferido via getComputedStyle no site deles). Só entra em uso no tema claro (ver
+<!-- CORREÇÃO (2026-08-10): Poppins adicionada como fonte do tema claro (ver
      "html.theme-light body" em style.css); o tema escuro continua com Figtree/JetBrains
      Mono, sem mudar nada nele. -->
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,7 +49,7 @@
 <div class="main-content">
 
 <div class="ribbon">
-  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API SILtb</div>
+  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API</div>
   <div class="ribbon-sep"></div>
   <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
   <div class="ribbon-sep"></div>
@@ -74,12 +73,9 @@
 
 <div class="wrap">
 
-  <!-- CONSTRUÍDO (21/08/2026) — pedido do Davi: "conecta do bi de referencia, e vamos analisar
-       a pagina de cobrança, clica em tudo, abre tudo, espeiona ela toda... e ja deixa montado
-       no nosso desh, que depois vamos popular". Estrutura inteira desta página foi copiada da
-       navegação real do BI de referência (https://serraclara.prefeituranalytics.com.br/cobranca,
-       logado como Roberta) — clicamos em cada painel/aba/lente pra entender as interações
-       antes de montar. NENHUM dado real ainda: os 3 números abaixo (KPIs, listas, gráficos)
+  <!-- CONSTRUÍDO (21/08/2026) — pedido do Davi: montar a página inteira de Cobrança
+       ("clica em tudo, abre tudo... e já deixa montado no nosso desh, que depois vamos
+       popular"). NENHUM dado real ainda: os 3 números abaixo (KPIs, listas, gráficos)
        ficam "—"/"Carregando..." até existir um Command (`cobranca:calcular`, ainda NÃO
        escrito — precisa investigar antes as tabelas reais de DAM/baixa/operador, mesma
        disciplina de sempre) que gere json/cache-cobranca.json e um endpoint
@@ -87,7 +83,7 @@
        devolve {disponivel:false}). O contrato de campos que essa página espera do futuro cache
        está documentado function por function abaixo (renderCobranca/renderAnaliseConversao/
        etc.) — quem for popular só precisa bater esse formato.
-       Estrutura observada no BI de referência (pra manter registro do que foi visto):
+       Estrutura definida para a página (registro do que foi planejado):
          1. 5 KPIs: Lançado/Arrecadado/Conversão/Potencial a Recuperar/Baixas Processadas.
          2. "Insights de Cobrança" (texto) + "Canais de Arrecadação" (donut: Febraban/
             ProcessoEstorno/mobiliario/Processo/Parcelamento).
@@ -98,7 +94,7 @@
          4. "Potencial de Arrecadação" (Vencido×A Vencer por tributo, linha expansível) ligado
             a "Quando Vence" (clicar/expandir um tributo mostra o saldo por mês de vencimento
             do lado — barras vermelhas = já venceu, laranja = a vencer; clicar num mês só
-            mostra tooltip, não abre lista de devedores nessa versão do BI de referência).
+            mostra tooltip, não abre lista de devedores nessa versão).
          5. "Baixas Processadas por Ano" (2015→exercício atual, ano atual em destaque).
          6. "Resultado Mensal da Arrecadação" (Geradas × Recebidas, barras agrupadas por mês).
          7. "Conversão por Tributo" (tabela: Tributo/Lançado/Arrecadado/A Recuperar/Conversão).
@@ -146,7 +142,7 @@
           <p class="iptu-kpi-foot" id="cobBaixasFoot">no exercício</p>
         </div>
       </div>
-      <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">Estrutura espelhada do BI de referência (conferido com login real em 21/08/2026) — "Baixas Processadas" conta guias/DAMs recebidas pelo setor de Cobrança no exercício, "Potencial a Recuperar" é o saldo devedor (inadimplência) ainda não arrecadado.</p>
+      <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">"Baixas Processadas" conta guias/DAMs recebidas pelo setor de Cobrança no exercício, "Potencial a Recuperar" é o saldo devedor (inadimplência) ainda não arrecadado.</p>
 
       <!-- 2. Insights + Canais de Arrecadação -->
       <div class="itbi-evol-insights-row">
@@ -301,7 +297,7 @@
   // investigar antes as tabelas reais de DAM/baixa/operador/vencimento, mesma disciplina de
   // sempre desta sessão (nunca escrever query de produção sem antes conferir a forma real do
   // dado). Isso aqui é só o ANDAIME (scaffold) visual — Davi pediu pra montar a página inteira
-  // "espiando" o BI de referência, e "depois vamos popular".
+  // antes, e "depois vamos popular".
   //
   // {
   //   disponivel: true,

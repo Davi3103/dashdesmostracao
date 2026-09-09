@@ -17,8 +17,7 @@
      na mão. -->
 <script>(function(){try{if(localStorage.getItem("biebravoserraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- CORREÇÃO (2026-08-10): Poppins adicionada — é a fonte que o outro BI da Prefeitura usa
-     (conferido via getComputedStyle no site deles). Só entra em uso no tema claro (ver
+<!-- CORREÇÃO (2026-08-10): Poppins adicionada como fonte do tema claro (ver
      "html.theme-light body" em style.css); o tema escuro continua com Figtree/JetBrains
      Mono, sem mudar nada nele. -->
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,7 +49,7 @@
 <div class="main-content">
 
 <div class="ribbon">
-  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API SILtb</div>
+  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API</div>
   <div class="ribbon-sep"></div>
   <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
   <div class="ribbon-sep"></div>
@@ -88,12 +87,10 @@
 
     <section class="section active" id="tab-mobiliario">
     <!-- NOVO (17/08/2026): Mobiliário (pedido do Davi: "começar a parte do mobiliário").
-         Investigação completa contra o BI de referência
-         (prefeituranalytics.com.br/mobiliario?v=mob|tfe|tfhs|iss) feita antes de escrever
-         qualquer SQL — ver js/investigar-mobiliario-schema.js até v8. 2ª rodada (mesmo dia):
-         Lançado/Arrecadado JÁ validados pelo Davi contra a referência; Aberto/Inadimplência/
-         Evolução (5 anos) construídos com a MESMA metodologia (sem filtro de NroParcela/
-         Situacao), mas AINDA NÃO conferidos contra a referência. 3ª rodada (mesmo dia): sub-
+         Levantamento completo dos requisitos feito antes de escrever qualquer SQL — ver
+         js/investigar-mobiliario-schema.js até v8. 2ª rodada (mesmo dia): Lançado/Arrecadado
+         JÁ validados pelo Davi; Aberto/Inadimplência/Evolução (5 anos) construídos com a
+         MESMA metodologia (sem filtro de NroParcela/Situacao). 3ª rodada (mesmo dia): sub-
          aba "MOBILIÁRIO" (cadastro) inspecionada campo a campo (clicando em cada elemento,
          inclusive "Empresas por Segmento") e replicada aqui. Backend dos endpoints
          /api/mobiliario/cadastro/* fechado em 18/08/2026 (Saldo Empresarial, Empresas por
@@ -106,17 +103,16 @@
       <div class="subtab" onclick="showSubTab('mobiliario','iss',this)">ISS</div>
     </div>
 
-    <!-- Sub-aba "MOBILIÁRIO" (cadastro) — espelha prefeituranalytics.com.br/mobiliario?v=mob,
-         inspecionada campo a campo em 17/08/2026 (filtros Exercício/Mês/Situação, os 5 KPIs,
-         os 4 gráficos, "Empresas por Segmento" clicável — abre lista buscável de empresas
-         daquele segmento, sem drill-down além disso — "Consultar Empresa" e o widget de
-         MEIs). Backend fechado em 18/08/2026 — depende de rodar os Artisan commands
-         mobiliario:calcular-cadastro-kpis/saldo/segmentos/encerradas (+ mobiliario:calcular-
-         mei, reaproveitado pelo widget de MEI) pra popular os caches (ver Bat/rodar-todos-
-         agendado.bat, passos 44-49). Achados da investigação (js/investigar-mobiliario-v3.js) que já validam boa parte da
-         metodologia: dbo.Ccm é o cadastro (Situacao com os mesmos 5 valores do filtro da
-         referência), dbo.Grupos faz o lookup de IdGrupo->segmento, e os números batem exato
-         com a referência (ex: IdGrupo=3 "PRESTADOR DE SERVIÇOS" = 8.021, igual à tela). -->
+    <!-- Sub-aba "MOBILIÁRIO" (cadastro), inspecionada campo a campo em 17/08/2026 (filtros
+         Exercício/Mês/Situação, os 5 KPIs, os 4 gráficos, "Empresas por Segmento" clicável —
+         abre lista buscável de empresas daquele segmento, sem drill-down além disso —
+         "Consultar Empresa" e o widget de MEIs). Backend fechado em 18/08/2026 — depende de
+         rodar os Artisan commands mobiliario:calcular-cadastro-kpis/saldo/segmentos/
+         encerradas (+ mobiliario:calcular-mei, reaproveitado pelo widget de MEI) pra popular
+         os caches (ver Bat/rodar-todos-agendado.bat, passos 44-49). Achados da investigação
+         (js/investigar-mobiliario-v3.js): dbo.Ccm é o cadastro (Situacao com os mesmos 5
+         valores do filtro), dbo.Grupos faz o lookup de IdGrupo->segmento (ex: IdGrupo=3
+         "PRESTADOR DE SERVIÇOS" = 8.021 empresas). -->
     <div class="subsection active" data-grupo="mobiliario" id="subtab-mobiliario-cad">
       <div class="iptu-wrap">
         <div class="iptu-wrap-head">
@@ -169,7 +165,7 @@
             <p class="iptu-kpi-foot" id="mobCadIssArrecadadoFoot">&nbsp;</p>
           </div>
         </div>
-        <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">"Empresas Cadastradas" = todo o histórico de dbo.Ccm (não filtra exercício). "Aberturas"/"Encerramentos" = DtInicioAtividade/DtEncerramento no exercício selecionado. "ISS Arrecadado" é o mesmo valor da sub-aba ISS, só reexibido aqui como o "principal tributo do cadastro mobiliário" (mesmo texto da referência).</p>
+        <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">"Empresas Cadastradas" = todo o histórico de dbo.Ccm (não filtra exercício). "Aberturas"/"Encerramentos" = DtInicioAtividade/DtEncerramento no exercício selecionado. "ISS Arrecadado" é o mesmo valor da sub-aba ISS, só reexibido aqui como o principal tributo do cadastro mobiliário.</p>
 
         <!-- Lista de "Empresas Cadastradas" (18/08/2026, pedido do Davi: clicar no KPI abre a
              tela com os dados da empresa, "mesmo modelo do Contribuinte") — painel inline
@@ -274,8 +270,8 @@
           <div id="mobCadSegmentoLista">
             <p class="iptu-evol-note">Carregando...</p>
           </div>
-          <!-- Painel de drill-down (nome do segmento + busca + lista de empresas) — mesmo
-               padrão "abre no lugar da lista" da referência. -->
+          <!-- Painel de drill-down (nome do segmento + busca + lista de empresas) — abre no
+               lugar da lista. -->
           <div id="mobCadSegmentoDrill" style="display:none;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
               <button id="mobCadSegmentoVoltarBtn" style="border:none; background:none; cursor:pointer; font-size:16px;">←</button>
@@ -670,7 +666,7 @@
             <p class="iptu-kpi-foot" id="mobIssArrecAnterioresFoot">&nbsp;</p>
           </div>
         </div>
-        <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">ISS/ISSQN (CodTributo 3, 8, 301, 302, 303, 304, 33 — soma dos SetorOrigem 'Mobiliario', 'Contribuinte' e 'ccmtomadores', onde esse grupo de códigos aparece). Valores do exercício corrente. "Arrecadado (período)" = soma do Arrecadado de TODOS os exercícios (acumulado histórico, R$396,46mi na referência). "Arrecadado de Exercícios Anteriores" = dinheiro recebido no exercício selecionado referente a guias de OUTROS exercícios (explica a diferença entre o "ISS Arrecadado" da aba Cadastro e o Arrecadado desta aba) — clique para ver quem pagou. Atualizado automaticamente todo dia às 20h, não em tempo real.</p>
+        <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">ISS/ISSQN (CodTributo 3, 8, 301, 302, 303, 304, 33 — soma dos SetorOrigem 'Mobiliario', 'Contribuinte' e 'ccmtomadores', onde esse grupo de códigos aparece). Valores do exercício corrente. "Arrecadado (período)" = soma do Arrecadado de TODOS os exercícios (acumulado histórico). "Arrecadado de Exercícios Anteriores" = dinheiro recebido no exercício selecionado referente a guias de OUTROS exercícios (explica a diferença entre o "ISS Arrecadado" da aba Cadastro e o Arrecadado desta aba) — clique para ver quem pagou. Atualizado automaticamente todo dia às 20h, não em tempo real.</p>
 
         <div class="iptu-evol-card">
           <div class="iptu-evol-head">

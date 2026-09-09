@@ -184,7 +184,7 @@
       baixasPorAno: baixasPorAno,
       resultadoMensal: resultadoMensal,
       conversaoPorTributoTabela: conversaoPorTributoTabela,
-      metodologia: "Dados de demonstração (protótipo) — valores fictícios gerados client-side em js/mock-api.js, sem fonte real no SILtb. Estrutura de campos segue o contrato documentado em cobranca.html."
+      metodologia: "Dados de demonstração (protótipo) — valores fictícios gerados client-side em js/mock-api.js, sem fonte de dado real. Estrutura de campos segue o contrato documentado em cobranca.html."
     };
   }
 

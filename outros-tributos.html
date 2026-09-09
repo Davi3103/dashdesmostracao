@@ -46,7 +46,7 @@
 <div class="main-content">
 
 <div class="ribbon">
-  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API SILtb</div>
+  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API</div>
   <div class="ribbon-sep"></div>
   <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
   <div class="ribbon-sep"></div>
@@ -70,12 +70,9 @@
 
 <div class="wrap">
 
-  <!-- CONSTRUÍDO (24/08/2026) — pedido do Davi: "Conecta no bi de referencia
-       https://serraclara.prefeituranalytics.com.br/outros-tributos, Vai na aba Outros Tributos.
-       Vamos replicar ele no nosso desh, Mesmos Padrão, Clica em tudo, olha todos os dados,
-       gráficos, KPIs, na Outros Tributos por Tipo, ao clicar abre um gráfico ao lado."
-       Exploração completa feita via Claude in Chrome (logado como Roberta) — estrutura
-       observada, de cima a baixo:
+  <!-- CONSTRUÍDO (24/08/2026) — pedido do Davi: montar a aba Outros Tributos, "clica em
+       tudo, olha todos os dados, gráficos, KPIs, na Outros Tributos por Tipo, ao clicar abre
+       um gráfico ao lado." Estrutura definida, de cima a baixo:
          1. 5 KPIs: Lançado/Arrecadado/Inadimplência/Isenção/Arrecadado (período).
          2. "Lançado × Arrecadado" (barras, 2018→exercício atual) + "Insights de Outros
             Tributos" (texto) + "Eficiência de Arrecadação" (gauge, % arrecadado/lançado).
@@ -88,9 +85,6 @@
             Arrecadado por exercício DO TIPO + "Simulação · Previsão 2027" com slider
             Conservador/Moderado/Agressivo arrastável, regressão linear ancorada no lançado
             real do exercício atual).
-       Pills como "Lançado"/"Evolução anual"/"Saldo devedor"/"Outros Tributos" no BI de
-       referência foram testadas e são só RÓTULOS ESTÁTICOS (não reagem a clique) — não
-       replicadas como toggle aqui.
 
        DADO REAL desde o primeiro dia (24/08/2026) — ao contrário de Cobrança/Ação Fiscal, que
        nasceram só como scaffold visual, aqui o backend (App\Console\Commands\
@@ -98,18 +92,14 @@
        6 rodadas de investigação (ver seu docblock completo) — só faltava o Controller
        (App\Http\Controllers\Api\OutrosTributosController, criado agora) + esta página.
 
-       DIVERGÊNCIA CONHECIDA E ACEITA vs a referência externa: nossos valores (ex.: Lançado
-       2026 ≈ R$15,7mi) são MENORES que os da referência (≈R$24,4mi) porque lá a cota única
-       (NroParcela=0) parece ser somada JUNTO com o carnê de parcelas 1-10, como se fossem 2
-       dívidas — aqui usamos a mesma metodologia já validada contra o SIL real no resto do
-       projeto (cota única é via ALTERNATIVA, não some com o carnê). Decisão do Davi
-       (19/08/2026): manter nossa metodologia, documentar a diferença em vez de forçar bater
-       com a referência (ver Documentacao-Geral.docx e o docblock do Command).
+       METODOLOGIA da cota única: usamos a mesma metodologia já validada contra o SIL real no
+       resto do projeto (cota única é via ALTERNATIVA, não some com o carnê de parcelas 1-10).
+       Decisão do Davi (19/08/2026): manter essa metodologia e documentá-la (ver
+       Documentacao-Geral.docx e o docblock do Command).
 
        "Composição do Lançado" aqui usa a MESMA fórmula/paleta já usada em Mobiliário (TFE/
        TFHS/ISS, ver renderMobComposicaoDonut em js/app.js): Suspenso/Outros = MAX(0, lançado -
-       arrecadado - inadimplência) — não é a mesma segmentação da referência (que separa
-       Isenção de Suspenso/Outros), porque não temos um valor em R$ de isenção calculado (só
+       arrecadado - inadimplência), porque não temos um valor em R$ de isenção calculado (só
        contagem, ver isento.qtd abaixo, hoje 0 pros 11 tipos — sem isenção ativa identificada
        nessas tabelas). "Isenção" no KPI fica R$0,00 com nota honesta, mesmo padrão já usado em
        Mobiliário.
@@ -128,7 +118,7 @@
         </div>
       </div>
       <p id="otIndisponivel" style="font-size:12px; color:var(--ink-dim); margin:6px 4px 0; display:none;">Ainda não calculado — rode <span class="mono">php artisan outros-tributos:calcular-por-tipo</span> (também roda sozinho no Bat das 20h).</p>
-      <p style="font-size:10.5px; color:var(--ink-dim); margin:6px 4px 0;">Reúne os 11 tipos de tributo fora de IPTU/ITBI/ISSQN/TCA/TFE/TFHS (ver lista em "Outros Tributos por Tipo" abaixo). Metodologia validada contra o SIL — valores menores que o BI de referência externo porque lá a cota única parece somar em dobro com o carnê de parcelas; ver <span class="mono">documentacao/Documentacao-Geral.docx</span> seção 3.62.</p>
+      <p style="font-size:10.5px; color:var(--ink-dim); margin:6px 4px 0;">Reúne os 11 tipos de tributo fora de IPTU/ITBI/ISSQN/TCA/TFE/TFHS (ver lista em "Outros Tributos por Tipo" abaixo). Metodologia validada contra o SIL; ver <span class="mono">documentacao/Documentacao-Geral.docx</span> seção 3.62.</p>
 
       <!-- 1. KPIs -->
       <div class="iptu-kpi-row">
@@ -577,7 +567,7 @@
 
   // Simulação · Previsão 2027 — regressão linear já calculada no Command (previsao2027.lancado
   // = cenário "Moderado", 100% do crescimento projetado). Slider escala esse delta entre 50%
-  // (Conservador) e 150% (Agressivo), mesma semântica descrita no BI de referência.
+  // (Conservador) e 150% (Agressivo).
   function renderSimulacao(tipo){
     var box = document.getElementById("otSimulacaoBox");
     if(!box) return;

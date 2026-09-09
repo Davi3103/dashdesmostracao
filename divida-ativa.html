@@ -17,8 +17,7 @@
      na mão. -->
 <script>(function(){try{if(localStorage.getItem("biebravoserraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- CORREÇÃO (2026-08-10): Poppins adicionada — é a fonte que o outro BI da Prefeitura usa
-     (conferido via getComputedStyle no site deles). Só entra em uso no tema claro (ver
+<!-- CORREÇÃO (2026-08-10): Poppins adicionada como fonte do tema claro (ver
      "html.theme-light body" em style.css); o tema escuro continua com Figtree/JetBrains
      Mono, sem mudar nada nele. -->
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,7 +49,7 @@
 <div class="main-content">
 
 <div class="ribbon">
-  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API SILtb</div>
+  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API</div>
   <div class="ribbon-sep"></div>
   <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
   <div class="ribbon-sep"></div>
@@ -93,7 +92,7 @@
           <span class="iptu-title">Visão Geral da Dívida Ativa (Exercício <span id="daAno">—</span>)</span>
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
             <!-- NOVO (19/08/2026, 2ª rodada) — pedido do Davi: filtro de Exercício funcional
-                 (o BI de referência tem esse dropdown com anos de 2005 a 2026). Populado via
+                 (dropdown com anos de 2005 a 2026). Populado via
                  JS a partir dos exercícios de idadeDosDebitos (sempre "todos os exercícios",
                  nunca filtrado) — ver montarFiltroAnoDividaAtiva() em app.js. Ao trocar, refaz
                  SÓ os 4 blocos ano-específicos (porTributo/splitAdminJudicial/
@@ -170,9 +169,8 @@
             <p class="iptu-kpi-value mono" id="daJudicial">—</p>
             <p class="iptu-kpi-foot" id="daJudicialFoot">&nbsp;</p>
           </div>
-          <!-- NOVO (20/08/2026, 5ª rodada) — pedido do Davi: 3º status que faltava replicar do
-               BI de referência (Administrativa/Judicial/Em Ajuizamento — ver
-               CalcularDividaAtiva.php). -->
+          <!-- NOVO (20/08/2026, 5ª rodada) — pedido do Davi: 3º status
+               (Administrativa/Judicial/Em Ajuizamento — ver CalcularDividaAtiva.php). -->
           <div class="iptu-kpi-card iptu-c-cotaunica">
             <p class="iptu-kpi-label">Em Ajuizamento</p>
             <p class="iptu-kpi-value mono" id="daEmAjuizamento">—</p>
@@ -195,7 +193,7 @@
             <p class="iptu-kpi-foot" id="daTotalGeralTodosExerciciosFoot">&nbsp;</p>
           </div>
         </div>
-        <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">"Administrativa", "Judicial" e "Em Ajuizamento" são um recorte do total do exercício selecionado no filtro acima (dbo.Parcelas.Situacao: Dívida Ativa administrativa × Ajuizada × Em Ajuizamento). O card "todos os exercícios" soma o histórico completo (1970–hoje), não muda com o filtro. Saldo calculado via ParcelasAtualizadas.VlrTotal (atualizado, não congelado) — ver nota de metodologia no rodapé desta página. Em R$, "Judicial" fica acima do BI de referência externo (divergência de método documentada — a quantidade de parcelas em cada status bate 100% com a referência).</p>
+        <p style="font-size:10.5px; color:var(--ink-dim); margin:12px 4px 0;">"Administrativa", "Judicial" e "Em Ajuizamento" são um recorte do total do exercício selecionado no filtro acima (dbo.Parcelas.Situacao: Dívida Ativa administrativa × Ajuizada × Em Ajuizamento). O card "todos os exercícios" soma o histórico completo (1970–hoje), não muda com o filtro. Saldo calculado via ParcelasAtualizadas.VlrTotal (atualizado, não congelado) — ver nota de metodologia no rodapé desta página.</p>
 
         <!-- b. Dívida Ativa por Tributo -->
         <div class="panel" style="margin-top:14px;">
@@ -528,7 +526,7 @@
   if(devCount) devCount.textContent = fmtInt(devedores.length) + " devedor(es) na lista (demonstração)";
 
   // j. Rodapé
-  set("daMetodologiaFoot", "Dados de demonstração (protótipo) — valores fictícios gerados client-side em divida-ativa.html, sem fonte real no SILtb.");
+  set("daMetodologiaFoot", "Dados de demonstração (protótipo) — valores fictícios gerados client-side em divida-ativa.html, sem fonte de dado real.");
 })();
 </script>
 </body>

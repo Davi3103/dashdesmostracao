@@ -17,8 +17,7 @@
      na mão. -->
 <script>(function(){try{if(localStorage.getItem("biebravoserraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- CORREÇÃO (2026-08-10): Poppins adicionada — é a fonte que o outro BI da Prefeitura usa
-     (conferido via getComputedStyle no site deles). Só entra em uso no tema claro (ver
+<!-- CORREÇÃO (2026-08-10): Poppins adicionada como fonte do tema claro (ver
      "html.theme-light body" em style.css); o tema escuro continua com Figtree/JetBrains
      Mono, sem mudar nada nele. -->
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,7 +49,7 @@
 <div class="main-content">
 
 <div class="ribbon">
-  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API SILtb</div>
+  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API</div>
   <div class="ribbon-sep"></div>
   <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
   <div class="ribbon-sep"></div>
@@ -87,8 +86,8 @@
 <div class="wrap">
 
     <section class="section active" id="tab-iptu">
-    <!-- CORREÇÃO (2026-08-10): Imobiliário ganhou sub-abas (pedido do Davi, mesma estrutura
-         do outro BI) — IPTU (já existia), ITBI, ISSCC e TCA.
+    <!-- CORREÇÃO (2026-08-10): Imobiliário ganhou sub-abas (pedido do Davi) — IPTU (já
+         existia), ITBI, ISSCC e TCA.
          CORREÇÃO (2026-08-13): a sub-aba estava rotulada "ISSQN" por engano — o tributo
          certo (confirmado com o Davi + investigar-isscc-schema.js) é ISSCC (ISS sobre
          Construção Civil / ISS Obras, CodTributo 40/17/18), diferente de ISSQN (ISS
@@ -462,7 +461,7 @@
           <canvas id="issccAlteracoesAreaChart"></canvas>
         </div>
         <p class="iptu-evol-note" id="issccAlteracoesAreaNote">Ainda não calculado. Atualiza automaticamente todo dia às 20h (ou rode <span class="mono">php artisan isscc:calcular-alteracoes-area</span> pelo terminal pra adiantar).</p>
-        <p style="font-size:10.5px; color:var(--ink-dim); margin:8px 4px 0;">A referência usa uma tabela (tb_dsod_imovel_urbano_alt_estrutura) que não existe no nosso banco. Fonte alternativa: dbo.LogAlteracoes (log de auditoria genérico do sistema), filtrado por alterações de campo "AreaEdificada" em dbo.Fisico — contagem de imóveis distintos e soma da área atual (não do delta), metodologia corrigida em 18/08/2026 — ver CalcularIssccAlteracoesArea.php.</p>
+        <p style="font-size:10.5px; color:var(--ink-dim); margin:8px 4px 0;">A tabela tb_dsod_imovel_urbano_alt_estrutura não existe no nosso banco. Fonte alternativa: dbo.LogAlteracoes (log de auditoria genérico do sistema), filtrado por alterações de campo "AreaEdificada" em dbo.Fisico — contagem de imóveis distintos e soma da área atual (não do delta), metodologia corrigida em 18/08/2026 — ver CalcularIssccAlteracoesArea.php.</p>
       </div>
 
       <div class="iptu-bairro-card">

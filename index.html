@@ -17,8 +17,7 @@
      na mão. -->
 <script>(function(){try{if(localStorage.getItem("biebravoserraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- CORREÇÃO (2026-08-10): Poppins adicionada — é a fonte que o outro BI da Prefeitura usa
-     (conferido via getComputedStyle no site deles). Só entra em uso no tema claro (ver
+<!-- CORREÇÃO (2026-08-10): Poppins adicionada como fonte do tema claro (ver
      "html.theme-light body" em style.css); o tema escuro continua com Figtree/JetBrains
      Mono, sem mudar nada nele. -->
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -50,7 +49,7 @@
 <div class="main-content">
 
 <div class="ribbon">
-  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API SILtb</div>
+  <div class="ribbon-item"><span class="rdot warn" id="ribbonApiDot"></span> API</div>
   <div class="ribbon-sep"></div>
   <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
   <div class="ribbon-sep"></div>
@@ -108,9 +107,8 @@
         <p class="kpi-label">Contribuintes carregados</p>
         <p class="kpi-value mono" id="kpiTotal">1.452</p>
         <p class="kpi-foot" id="kpiTotalFoot">&nbsp;</p>
-        <!-- CORREÇÃO (2026-08-10): pedido do Davi, comparando com o outro BI da Prefeitura —
-             sub-linha com os cadastros novos do ano corrente, igual o "Novos 2026" que
-             aparece embaixo do "Total Contribuintes" no outro BI. -->
+        <!-- CORREÇÃO (2026-08-10): pedido do Davi — sub-linha com os cadastros novos do ano
+             corrente, embaixo do "Total Contribuintes". -->
         <p class="kpi-subline" id="kpiNovosNoAno">&nbsp;</p>
       </div>
       <div class="kpi-card k-debt" id="kpiCardDebt" style="cursor:pointer;">
@@ -143,13 +141,12 @@
         <p class="kpi-value mono" id="kpiAtivos">1.300</p>
         <p class="kpi-foot" id="kpiAtivosFoot">&nbsp;</p>
       </div>
-      <!-- CORREÇÃO (2026-08-10): card novo, pedido do Davi depois de comparar com o outro BI
-           da Prefeitura (ver documentacao/Diferenca-BI-Referencia.docx). dbo.Contribuintes só
+      <!-- CORREÇÃO (2026-08-10): card novo, pedido do Davi. dbo.Contribuintes só
            tem cadastro "vivo" — quando um cadastro é excluído no SIL ele é movido pra
-           dbo.ContribuintesExcluidos, uma tabela separada (tipo "lixeira"). O outro BI soma as
-           duas tabelas no total dele; aqui em vez de misturar cadastro válido com excluído no
-           mesmo número, o excluído vira um card à parte. Valor vem de /api/dashboard-data
-           (campo totalExcluidos), ao vivo, sem cache. -->
+           dbo.ContribuintesExcluidos, uma tabela separada (tipo "lixeira"). Em vez de
+           misturar cadastro válido com excluído no mesmo número, o excluído vira um card
+           à parte. Valor vem de /api/dashboard-data (campo totalExcluidos), ao vivo, sem
+           cache. -->
       <div class="kpi-card k-inativo">
         <p class="kpi-label">Contribuintes Excluídos</p>
         <p class="kpi-value mono" id="kpiExcluidos">152</p>
