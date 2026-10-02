@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>BiebravoSerraClara — Contribuintes &amp; Dívida Ativa</title>
+<title>SerraClara — Contribuintes &amp; Dívida Ativa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- CORREÇÃO (2026-08-10): aplica a classe de tema ANTES do CSS/resto da página renderizar
      (o script principal, js/app.js, só roda no fim do <body>) — sem isso, a página pisca
@@ -10,12 +10,12 @@
      aplicarTema() em app.js, só que adiantada; app.js continua sendo a fonte da verdade pro
      resto da sessão (clique no botão, etc.).
      CORREÇÃO (2026-08-10, 2ª rodada): a chave do localStorage mudou de
-     "biebravoserraclara_tema" pra "biebravoserraclara_tema_v2" — o Davi tinha clicado no toggle em
+     "serraclara_tema" pra "serraclara_tema_v2" — o Davi tinha clicado no toggle em
      algum momento anterior (quando o padrão ainda era escuro), então o navegador dele já
      tinha "dark" salvo na chave antiga, e isso sobrescrevia silenciosamente o novo padrão
      claro. Trocar a chave dá um reset limpo pra todo mundo sem precisar limpar o navegador
      na mão. -->
-<script>(function(){try{if(localStorage.getItem("biebravoserraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
+<script>(function(){try{if(localStorage.getItem("serraclara_tema_v2")!=="dark"){document.documentElement.classList.add("theme-light");}}catch(e){document.documentElement.classList.add("theme-light");}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <!-- CORREÇÃO (2026-08-10): Poppins adicionada como fonte do tema claro (ver
      "html.theme-light body" em style.css); o tema escuro continua com Figtree/JetBrains
@@ -54,7 +54,7 @@
   <div class="ribbon-item"><i class="ti ti-building-bank"></i> Secretaria de Finanças &middot; Serra Clara</div>
   <div class="ribbon-sep"></div>
   <div class="ribbon-item" id="ribbonClock"><i class="ti ti-clock"></i> —</div>
-  <div class="ribbon-right">BiebravoSerraClara</div>
+  <div class="ribbon-right">SerraClara</div>
 </div>
 
 <div class="topbar">
