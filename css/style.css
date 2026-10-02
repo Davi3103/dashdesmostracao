@@ -146,6 +146,35 @@ input, select{ font-family: inherit; color: var(--ink); background: var(--bg-car
 }
 .nav-wrap .tab.active i{ color: var(--teal); opacity: 1; }
 
+/* menu lateral com cores mais vivas (pedido do Davi, 2026-10-02):
+   fundo em degradê verde -> azul (mesma ideia do cabeçalho), ícone colorido
+   por item e item ativo com degradê vivo. */
+.sidebar{
+  background:
+    radial-gradient(420px 260px at 0% 0%, rgba(46,230,150,0.18) 0%, transparent 70%),
+    linear-gradient(180deg, #06231a 0%, #0a2a33 55%, #0d2350 100%);
+  border-right: 1px solid rgba(80,200,255,0.18);
+}
+.nav-wrap .tab{ color: #b9d8d0; }
+.nav-wrap .tab i{ opacity: 1; }
+.nav-wrap .tab:nth-child(6n+1) i{ color: #34e8a0; }
+.nav-wrap .tab:nth-child(6n+2) i{ color: #4fb3ff; }
+.nav-wrap .tab:nth-child(6n+3) i{ color: #ffc44d; }
+.nav-wrap .tab:nth-child(6n+4) i{ color: #b38bff; }
+.nav-wrap .tab:nth-child(6n+5) i{ color: #ff6b8a; }
+.nav-wrap .tab:nth-child(6n+6) i{ color: #2fe0e0; }
+.nav-wrap .tab:hover{
+  background: linear-gradient(90deg, rgba(52,232,160,0.16) 0%, rgba(79,179,255,0.12) 100%);
+  color: #ffffff;
+}
+.nav-wrap .tab.active{
+  background: linear-gradient(90deg, #12b886 0%, #1c7ed6 100%);
+  color: #ffffff;
+  border-left: 2px solid #b6ffe0;
+  box-shadow: 0 4px 14px rgba(28,126,214,0.35);
+}
+.nav-wrap .tab.active i{ color: #ffffff; }
+
 .main-content{ flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
 /* ribbon */
@@ -172,11 +201,20 @@ input, select{ font-family: inherit; color: var(--ink); background: var(--bg-car
 /* topbar */
 .topbar{
   padding: 22px 28px;
+  /* degradê verde-claro -> azul (pedido do Davi, 2026-10-02) */
   background:
-    radial-gradient(680px 220px at 18% 0%, var(--teal-soft) 0%, transparent 70%),
-    var(--bg-soft);
+    radial-gradient(620px 220px at 15% 0%, rgba(120,235,170,0.22) 0%, transparent 70%),
+    linear-gradient(115deg, #0f3326 0%, #0e3a3f 45%, #13325e 100%);
   border-bottom: 1px solid var(--line);
 }
+html.theme-light .topbar{
+  background:
+    radial-gradient(620px 220px at 15% 0%, rgba(255,255,255,0.55) 0%, transparent 70%),
+    linear-gradient(115deg, #d4f7df 0%, #c3eee9 45%, #bcd6ff 100%);
+  border-bottom: 1px solid #b9d3e6;
+}
+html.theme-light .topbar .brand-eyebrow{ color: #0a7a5a; }
+html.theme-light .topbar .brand-sub{ color: #3f5a6e; }
 .topbar-inner{ display: flex; align-items: center; max-width: 1400px; margin: 0 auto; }
 .brand-eyebrow{
   margin: 0 0 4px;
